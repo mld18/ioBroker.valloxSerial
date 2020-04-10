@@ -18,7 +18,7 @@
 			"de": "Vorlage für die Adapterentwicklung"
 		},
 		"authors": [
-			"Markus L. Dechert <iobroker@markus-dechert.de>"
+			"Markus L. Dechert <github@markus-dechert.de>"
 		],
 		"keywords": [
 			"ioBroker",
@@ -29,10 +29,10 @@
 		"license": "MIT",
 		"platform": "Javascript/Node.js",
 		"main": "build/main.js",
-		"icon": "template.png",
+		"icon": "valloxserial.png",
 		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/Author/ioBroker.template/master/admin/template.png",
-		"readme": "https://github.com/Author/ioBroker.template/blob/master/README.md",
+		"extIcon": "https://github.com/mld18/ioBroker.valloxSerial/blob/master/admin/valloxserial.png",
+		"readme": "https://github.com/mld18/ioBroker.valloxSerial/blob/master/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
 		"type": "general",

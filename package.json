@@ -1,22 +1,22 @@
 {
-  "name": "iobroker.template",
+  "name": "iobroker.valloxserial",
   "version": "0.0.1",
-  "description": "Template for adapter development",
+  "description": "iobroker Adapter for Vallox ventilation units with legacy RS-485 serial interfaces",
   "author": {
     "name": "Author",
-    "email": "author@mail.com"
+    "email": "github@markus-dechert.de"
   },
-  "homepage": "https://github.com/Author/ioBroker.template",
+  "homepage": "https://github.com/mld18/ioBroker.valloxSerial",
   "license": "MIT",
   "keywords": [
     "ioBroker",
-    "template",
-    "Smart Home",
+    "Vallox",
+    "RS485",
     "home automation"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Author/ioBroker.template"
+    "url": "https://github.com/mld18/ioBroker.valloxSerial"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^2.2.1"
@@ -84,7 +84,7 @@
     "instrument": true
   },
   "bugs": {
-    "url": "https://github.com/Author/ioBroker.template/issues"
+    "url": "https://github.com/mld18/ioBroker.valloxSerial/issues"
   },
   "readmeFilename": "README.md"
 }

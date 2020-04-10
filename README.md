@@ -1,4 +1,4 @@
-![Logo](admin/template.png)
+![Logo](admin/valloxserial.png)
 # ioBroker.valloxSerial
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.template)
@@ -10,7 +10,6 @@
 
 
 ## TODOs
-* Logo austauschen
 * Vallox Serial Protocol dokumentieren
 * Anbindung beschreiben
   * Teileliste
