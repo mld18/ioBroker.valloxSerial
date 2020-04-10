@@ -1,1 +1,1 @@
-# ioBroker.template
+# ioBroker.valloxSerial
