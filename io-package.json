@@ -1,0 +1,64 @@
+{
+	"common": {
+		"name": "ioBroker.valloxSerial",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung"
+			}
+		},
+		"title": "Template (TypeScript)",
+		"titleLang": {
+			"en": "Template (TypeScript)",
+			"de": "Vorlage (TypeScript)"
+		},
+		"desc": {
+			"en": "Template for adapter development",
+			"de": "Vorlage für die Adapterentwicklung"
+		},
+		"authors": [
+			"Markus L. Dechert <iobroker@markus-dechert.de>"
+		],
+		"keywords": [
+			"ioBroker",
+			"Vallox",
+			"RS485",
+			"home automation"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "build/main.js",
+		"icon": "template.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/Author/ioBroker.template/master/admin/template.png",
+		"readme": "https://github.com/Author/ioBroker.template/blob/master/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "general",
+		"compact": true,
+		"materialize": true,
+		"materializeTab": true,
+		"adminTab": {
+			"singleton": true,
+			"name": {
+				"en": "Template (TypeScript)",
+				"de": "Vorlage (TypeScript)"
+			},
+			"link": "",
+			"fa-icon": "info"
+		},
+		"supportCustoms": true,
+		"dependencies": [
+			{
+				"js-controller": ">=1.4.2"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42"
+	},
+	"objects": [],
+	"instanceObjects": []
+}
