@@ -1,10 +1,27 @@
 ![Logo](admin/valloxserial.png)
 # ioBroker.valloxSerial
 
----
+
+[![NPM version](http://img.shields.io/npm/v/iobroker.valloxserial.svg)](https://www.npmjs.com/package/iobroker.valloxserial)
+
+[![Dependency Status](https://img.shields.io/david/mld18/iobroker.valloxserial.svg)](https://david-dm.org/hacki11/iobroker.valloxmv)
+[![Known Vulnerabilities](https://snyk.io/test/github/mld18/ioBroker.valloxserial/badge.svg)](https://snyk.io/test/github/mld18/ioBroker.valloxserial)
+![Number of Installations (latest)](http://iobroker.live/badges/template-installed.svg)
+
+[![NPM](https://nodei.co/npm/iobroker.valloxserial.png?downloads=true)](https://nodei.co/npm/iobroker.valloxserial/)
+
+<!--
+Think about these badges later on...
+[![Downloads](https://img.shields.io/npm/dm/iobroker.valloxserial.svg)](https://www.npmjs.com/package/iobroker.valloxserial)
+![Number of Installations (stable)](http://iobroker.live/badges/template-stable.svg)
+[![Travis-CI](http://img.shields.io/travis/mld18/ioBroker.valloxserial/master.svg)](https://travis-ci.org/hacki11/ioBroker.valloxmv)
+-->
+
+
+
+## Disclaimer
 For this adapter development has just started. Please don't use it and don't file any issues yet.
 Stay tuned...
----
 
 
 ## Description
@@ -12,7 +29,7 @@ This is an [ioBroker](http://iobroker.net) adapter. It is used to read settings 
 
 If you are looking for an adapter for a Vallox MV unit, please refer to [ioBroker.valloxmv](https://github.com/hacki11/ioBroker.valloxmv).
 
-# Disclaimer / Warning
+# Warning
 This adapter is provided 'as is' with no guarantee of proper function. Use at own risk. 
 
 ## Supported (tested) Units
@@ -66,28 +83,31 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 
 * The FHEM project provides a documentation of the protocol as well [https://wiki.fhem.de/wiki/Vallox]
 
-## TODOs
-* Stuff
-
-
-## Rework later...
-[![NPM version](http://img.shields.io/npm/v/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.template)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.template)
-![Number of Installations (latest)](http://iobroker.live/badges/template-installed.svg)
-![Number of Installations (stable)](http://iobroker.live/badges/template-stable.svg)
-[![Dependency Status](https://img.shields.io/david/Author/iobroker.template.svg)](https://david-dm.org/Author/iobroker.template)
-[![Known Vulnerabilities](https://snyk.io/test/github/Author/ioBroker.template/badge.svg)](https://snyk.io/test/github/Author/ioBroker.template)
-
-
-
-
-
-
 ## Changelog
  
 ### 0.0.1
-* (Author) initial release
+* (Markus L. Dechert) initial release
 
 ## License
 
-License information can be found [here](./LICENSE)
+MIT License
+
+Copyright (c) 2020 Markus L. Dechert <github@markus-dechert.de>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
