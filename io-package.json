@@ -1,10 +1,10 @@
 {
 	"common": {
-		"name": "ioBroker.valloxserial",
+		"name": "valloxserial",
 		"version": "0.0.1",
 		"news": {
 			"0.0.1": {
-				"en": "initial release",
+				"en": "Initial Release",
 				"de": "Erstveröffentlichung"
 			}
 		},
