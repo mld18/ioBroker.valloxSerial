@@ -42,8 +42,8 @@
 		"adminTab": {
 			"singleton": true,
 			"name": {
-				"en": "Template (TypeScript)",
-				"de": "Vorlage (TypeScript)"
+				"en": "Vallox SE serial",
+				"de": "Vallox SE serial"
 			},
 			"link": "",
 			"fa-icon": "info"
