@@ -1,6 +1,6 @@
 {
 	"common": {
-		"name": "ioBroker.valloxSerial",
+		"name": "ioBroker.valloxserial",
 		"version": "0.0.1",
 		"news": {
 			"0.0.1": {
@@ -8,14 +8,14 @@
 				"de": "Erstveröffentlichung"
 			}
 		},
-		"title": "Template (TypeScript)",
+		"title": "Vallox SE serial",
 		"titleLang": {
-			"en": "Template (TypeScript)",
-			"de": "Vorlage (TypeScript)"
+			"en": "Vallox SE Serial via RS-485 Adapater",
+			"de": "Vallox SE Serial via RS-485 Adapater"
 		},
 		"desc": {
-			"en": "Template for adapter development",
-			"de": "Vorlage für die Adapterentwicklung"
+			"en": "Adapter to read and change settings of Vallox ventilation units of type SE via the legacy RS-485 based serial protocol.",
+			"de": "Adapter zum Lesen und Ändern der Einstellungen von Vallox KWL-Anlagen des Typs SE über das RS-485-basierte serielle Protokoll."
 		},
 		"authors": [
 			"Markus L. Dechert <github@markus-dechert.de>"
