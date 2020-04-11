@@ -1,10 +1,7 @@
-/*
- * Created with @iobroker/create-adapter v1.23.0
- */
-
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
+import * as SerialPort from "serialport";
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";

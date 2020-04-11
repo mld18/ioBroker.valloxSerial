@@ -46,7 +46,8 @@
     "sinon": "^8.1.1",
     "source-map-support": "^0.5.16",
     "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "@types/serialport": "^6.0.1"
   },
   "main": "build/main.js",
   "scripts": {
