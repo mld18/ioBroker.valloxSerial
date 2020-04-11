@@ -31,7 +31,7 @@
 		"main": "build/main.js",
 		"icon": "valloxserial.png",
 		"enabled": true,
-		"extIcon": "https://github.com/mld18/ioBroker.valloxSerial/blob/master/admin/valloxserial.png",
+		"extIcon": "https://github.com/mld18/ioBroker.valloxSerial/raw/master/admin/valloxserial.png",
 		"readme": "https://github.com/mld18/ioBroker.valloxSerial/blob/master/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
