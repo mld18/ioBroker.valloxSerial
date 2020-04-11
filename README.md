@@ -86,7 +86,7 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 ## Changelog
  
 ### 0.0.1
-* (Markus L. Dechert) initial release
+* (mld18) initial release
 
 ## License
 

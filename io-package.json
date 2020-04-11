@@ -35,7 +35,7 @@
 		"readme": "https://github.com/mld18/ioBroker.valloxSerial/blob/master/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
-		"type": "general",
+		"type": "climate-control",
 		"compact": true,
 		"materialize": true,
 		"materializeTab": true,
