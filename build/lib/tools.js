@@ -56,3 +56,4 @@ function translateText(text, targetLang) {
     });
 }
 exports.translateText = translateText;
+//# sourceMappingURL=tools.js.map

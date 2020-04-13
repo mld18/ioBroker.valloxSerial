@@ -115,3 +115,4 @@ else {
     // otherwise start the instance directly
     (() => new ValloxSerial())();
 }
+//# sourceMappingURL=main.js.map

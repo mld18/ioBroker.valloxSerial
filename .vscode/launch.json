@@ -10,7 +10,8 @@
             "protocol": "inspector",
             "name": "Attach to Remote",
             "address": "iobroker-raspi", // TODO: change this to your debugging target!
-            "port": 9229
+            "port": 9229,
+            "sourceMaps": true
         }
     ]
 }
