@@ -93,9 +93,6 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 
 * As stated in the article [Serial ports usage on Linux](http://www.armadeus.org/wiki/index.php?title=Serial_ports_usage_on_Linux&oldid=14638) "by default serial ports are configured as terminal emulator". In our use case we don't want the echoing behavior
 
-## TODO
-* 
-
 ## Development Guide
 
 ### Used Tooling
@@ -107,8 +104,17 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 ### HowTos 
 
 #### Remote Debugging
+The adapter development is done using two machines: (1) desktop computer with an IDE for the actual development work and (2) a Raspberry Pi running ioBroker with all its modules.
+
+For the computer with the IDE:
+This project contains a `launch.json` config file for Visual Studio Code. This file contains an *attach* configuration that allows to debug the code which runs on the other machine. 
+
+For the ioBroker machine:
+The module folder contains a shell script `start-remote-debugging.sh` that starts Node.js with the adapter instance in debug mode and a breakpoint at line 1 of `main.js`.
 
 
+## TODO
+* Extend `start-remote-debugging.sh` to test for already running adapter instances 
 
 ## Changelog
  
