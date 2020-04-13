@@ -63,13 +63,17 @@ This [video](https://youtu.be/DXgvaibDJzo) shows how to install the RS-485 to US
 3.  `modprobe usbserial vendor=0x0403 product=0x6001` (with my vendor and product ID from `lsusb`)
 4. Check with `dmesg | grep ttyUSB` (should tell you that there's a FTDI device attached to ttyUSB)
 5. Make interface public: `chmod 777 /dev/ttyUSB0`
-6. Check if ttyUSB0 is set to serial config of 9600,N,8,1 (9600 bauds, no stopbit, 8 data bits, 1 stop bit): `stty -a -F /dev/ttyUSB0` or just set it `stty -F /dev/ttyUSB0 9600 cs8 -cstopb -parenb`
+6. Check if ttyUSB0 is set to serial config of 9600,N,8,1 (9600 bauds, no stopbit, 8 data bits, 1 stop bit): `stty -a -F /dev/ttyUSB0` or just set it `stty -F /dev/ttyUSB0 9600 cs8 min 1 ixon -cstopb -parenb -echo -echoe -echok`
+    | Output of `stty -a -F /dev/ttyUSB0` that works for me |
+    |---	|
+    | speed 9600 baud; rows 0; columns 0; line = 0; <br> intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W; <br> lnext = ^V; discard = ^O; min = 1; time = 0; <br> -parenb -parodd -cmspar cs8 hupcl -cstopb cread clocal -crtscts <br> -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl ixon -ixoff -iuclc -ixany -imaxbel -iutf8 <br> -opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 <br> -isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke -flusho -extproc |
+
 7. See if data is coming in `xxd -c 6 -g 1 -u /dev/ttyUSB0`
 
 
 ## Protocol
 
-### Serial Config
+### UART Config
 9600,N,8,1 (9600 bauds, no stopbit, 8 data bits, 1 stop bit).
 
 ### Checksum
@@ -77,11 +81,34 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 
 ## Sources
 
+### Vallox Serial Protocol
+
 * You may find a Vallox documentation in Finish [here](https://docplayer.fi/42549060-Vallox-digit-vaylaprotokolla.html)
 
 * The Loxone project offer a very good english protocol description [PDF](https://www.loxwiki.eu/download/attachments/918242/Digit_protocol_english_RS485.pdf)
 
 * The FHEM project provides a documentation of the protocol as well [https://wiki.fhem.de/wiki/Vallox]
+
+### Serial Port and UART Protocol
+
+* As stated in the article [Serial ports usage on Linux](http://www.armadeus.org/wiki/index.php?title=Serial_ports_usage_on_Linux&oldid=14638) "by default serial ports are configured as terminal emulator". In our use case we don't want the echoing behavior
+
+## TODO
+* 
+
+## Development Guide
+
+### Used Tooling
+* Visual Studio Code (1.44.0)
+* ioBroker running on Raspberry PI 3B
+  * Node.js 8.17.0
+  * NPM 6.13.4
+
+### HowTos 
+
+#### Remote Debugging
+
+
 
 ## Changelog
  
