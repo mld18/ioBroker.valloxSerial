@@ -21,12 +21,12 @@ declare global {
 	}
 }
 
-class Template extends utils.Adapter {
+class ValloxSerial extends utils.Adapter {
 
 	public constructor(options: Partial<ioBroker.AdapterOptions> = {}) {
 		super({
 			...options,
-			name: "template",
+			name: "valloxserial",
 		});
 		this.on("ready", this.onReady.bind(this));
 		this.on("objectChange", this.onObjectChange.bind(this));
@@ -147,8 +147,8 @@ class Template extends utils.Adapter {
 
 if (module.parent) {
 	// Export the constructor in compact mode
-	module.exports = (options: Partial<ioBroker.AdapterOptions> | undefined) => new Template(options);
+	module.exports = (options: Partial<ioBroker.AdapterOptions> | undefined) => new ValloxSerial(options);
 } else {
 	// otherwise start the instance directly
-	(() => new Template())();
+	(() => new ValloxSerial())();
 }
