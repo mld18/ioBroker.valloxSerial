@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "name": "Attach to Remote",
+            "address": "iobroker-raspi", // TODO: change this to your debugging target!
+            "port": 9229
+        }
+    ]
+}
