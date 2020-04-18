@@ -8,16 +8,29 @@
             "type": "node",
             "request": "attach",
             "protocol": "inspector",
+
             "name": "Attach to remote ioBroker-Module",
-            "address": "iobroker-raspi", // TODO: change this to your debugging target!
+            /* TODO: change this to your debugging target machine.
+               May be an IP address or a DNS name. */
+            "address": "iobroker-raspi", 
             "port": 9229,
-            "trace": true,
+
+            /* set trace to true if you're having problems to get the remote
+               debugger to work. The VS Code Debug Console view will guide you
+               to a log file (debugadapter-legacy.txt) */
+            "trace": false,
+
             "sourceMaps": true,
+
+            /* For more information about the source mapping and the remote
+               debug settings please refer to
+               https://code.visualstudio.com/docs/nodejs/nodejs-debugging */
             "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/opt/iobroker/node_modules/iobroker.valloxserial"
-/*             "sourceMapPathOverrides": {
-                "src/*": "${workspaceFolder}/src/*"
-            } */
+            /* TODO: enter the absolute path to the directory with the ioBroker
+               module that we want to debug */
+            "remoteRoot": "/opt/iobroker/node_modules/iobroker.valloxserial", 
+            
+            "smartStep": true
         }
     ]
 }
