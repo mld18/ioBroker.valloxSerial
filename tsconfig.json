@@ -32,7 +32,7 @@
 
 		"sourceMap": true,
 		"inlineSourceMap": false,
-		"sourceRoot": "./src/",
+		"sourceRoot": "src/",
 		"watch": false
 	},
 	"include": [
