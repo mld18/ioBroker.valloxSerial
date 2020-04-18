@@ -10,7 +10,7 @@
 		"checkJs": true,
 
 		"noEmitOnError": true,
-		"outDir": "./build/",
+		"outDir": "build",
 		"removeComments": false,
 		"module": "commonjs",
 		"moduleResolution": "node",
@@ -32,6 +32,7 @@
 
 		"sourceMap": true,
 		"inlineSourceMap": false,
+		"sourceRoot": "./src/",
 		"watch": false
 	},
 	"include": [
