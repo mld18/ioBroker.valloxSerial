@@ -53,7 +53,7 @@ REL_PATH_TO_MAIN_JS=$(find . -name 'main.js' -exec echo "{}"  \; | head -n 1 | s
 echo "Relative path to main.js of module: $REL_PATH_TO_MODULE/$REL_PATH_TO_MAIN_JS";
 
 cd $IOBROKER_ROOT
-node --inspect-brk=$IP_ADDRESS:$DEBUG_PORT $REL_PATH_TO_MODULE/$REL_PATH_TO_MAIN_JS --force --logs
+node --inspect-brk=$IP_ADDRESS:$DEBUG_PORT $REL_PATH_TO_MODULE/$REL_PATH_TO_MAIN_JS --debug
 
 # change back to old working directory
 cd $PWD
