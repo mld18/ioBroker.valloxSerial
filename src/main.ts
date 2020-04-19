@@ -24,8 +24,8 @@ declare global {
 
 class ValloxSerial extends utils.Adapter {
 	// Member variables
-	serialPort : SerialPort; 
-	datagramSource : SerialPort.parsers.Delimiter;
+	serialPort! : SerialPort
+	datagramSource! : SerialPort.parsers.Delimiter;
 
 	public constructor(options: Partial<ioBroker.AdapterOptions> = {}) {
 		super({
@@ -37,24 +37,6 @@ class ValloxSerial extends utils.Adapter {
 		this.on("stateChange", this.onStateChange.bind(this));
 		// this.on("message", this.onMessage.bind(this));
 		this.on("unload", this.onUnload.bind(this));
-
-		this.log.info(`Opening serial port ${this.config.serialPortDevice} at 9600 bit/s, 8 databits, no parity, 1 stop bit.`)
-		this.serialPort = new SerialPort(this.config.serialPortDevice, {
-			autoOpen: true,
-			baudRate: 9600,
-			dataBits: 8,
-			parity: 'none',
-			stopBits: 1
-		  });
-		this.bindPortEvents();
-
-		// initialize and pipe serial port input through DelimiterParser
-		this.datagramSource = this.serialPort.pipe(new SerialPort.parsers.Delimiter(
-			/* Datagrams start with a 0x01 byte, so we use a
-			   Delimiter parser for separating datagrams */
-			{ delimiter: [0x1] }
-		));
-		this.datagramSource.on("data", this.onDataReady.bind(this));
 	}
 
 	private bindPortEvents() {
@@ -95,6 +77,24 @@ class ValloxSerial extends utils.Adapter {
 	 */
 	private async onReady(): Promise<void> {
 		this.log.debug("onReady() called.");
+
+		this.log.info(`Opening serial port ${this.config.serialPortDevice} at 9600 bit/s, 8 databits, no parity, 1 stop bit.`)
+		this.serialPort = new SerialPort(this.config.serialPortDevice, {
+			autoOpen: true,
+			baudRate: 9600,
+			dataBits: 8,
+			parity: 'none',
+			stopBits: 1
+		  });
+		this.bindPortEvents();
+
+		// initialize and pipe serial port input through DelimiterParser
+		this.datagramSource = this.serialPort.pipe(new SerialPort.parsers.Delimiter(
+			/* Datagrams start with a 0x01 byte, so we use a
+			   Delimiter parser for separating datagrams */
+			{ delimiter: [0x1] }
+		));
+		this.datagramSource.on("data", this.onDataReady.bind(this));
 		// Initialize your adapter here
 		// TODO: init states
 		/*
