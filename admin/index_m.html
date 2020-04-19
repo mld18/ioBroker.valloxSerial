@@ -64,27 +64,39 @@
 <body>
 
 	<div class="m adapter-container">
-
 		<div class="row">
-			<div class="col s12 m4 l2">
-				<img src="template.png" class="logo">
-			</div>
-		</div>
-
-		<!-- Put your content here -->
-
-		<!-- For example columns with settings: -->
-		<div class="row">
-			<div class="col s6 input-field">
-				<input type="checkbox" class="value" id="option1" />
-				<label for="option1" class="translate">option1</label>
+			<div class="col s12">
+				<ul class="tabs">
+					<li class="tab col s5 m4"><a href="#tab-main" class="translate active">Main settings</a></li>
+					<li class="tab col s5 m4"><a href="#tab-advanced" class="translate">Advanced settings</a></li>
+				</ul>
 			</div>
 
-			<div class="col s6 input-field">
-				<input type="text" class="value" id="option2" />
-				<label for="option2" class="translate">option2</label>
+			<!-- TAB: Main settings -->
+			<div id="tab-main" class="col s12 page">
+				<div class="row">
+					<div class="col s12 m4 l2">
+						<img src="valloxserial.png" class="logo" />
+					</div>
+				</div>
+
+				<div class="col s12 input-field">
+					<input type="text" class="value" id="serialPortDevice" />
+					<label for="serialPortDevice" class="translate">Serial port device</label>
+					<span class="translate">Absolute path to serial port device address </span>
+				</div>
+
 			</div>
-		</div>
+
+			<!-- TAB: Advanced settings -->
+			<div id="tab-main" class="col s12 page">
+                <div class="input-field col s12">
+					<input type="checkbox" class="value" id="debugLogDatagrams" />
+					<label for="debugLogDatagrams" class="translate">Log datagrams</label>
+					<span class="translate">If set, all datagrams are logged with level debug.</span>
+                </div>
+
+			</div>
 
 	</div>
 

@@ -9,9 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
 const utils = require("@iobroker/adapter-core");
+const SerialPort = require("serialport");
 class ValloxSerial extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "valloxserial" }));
@@ -20,18 +19,62 @@ class ValloxSerial extends utils.Adapter {
         this.on("stateChange", this.onStateChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
+        this.log.info(`Opening serial port ${this.config.serialPortDevice} at 9600 bit/s, 8 databits, no parity, 1 stop bit.`);
+        this.serialPort = new SerialPort(this.config.serialPortDevice, {
+            autoOpen: true,
+            baudRate: 9600,
+            dataBits: 8,
+            parity: 'none',
+            stopBits: 1
+        });
+        this.bindPortEvents();
+        // initialize and pipe serial port input through DelimiterParser
+        this.datagramSource = this.serialPort.pipe(new SerialPort.parsers.Delimiter(
+        /* Datagrams start with a 0x01 byte, so we use a
+           Delimiter parser for separating datagrams */
+        { delimiter: [0x1] }));
+        this.datagramSource.on("data", this.onDataReady.bind(this));
+    }
+    bindPortEvents() {
+        this.serialPort.on('error', (err) => {
+            this.log.error(`PROBLEM WITH SERIAL PORT: ${err.message}`);
+        });
+        this.serialPort.on('open', () => {
+            this.log.info('Serial port opened');
+        });
+        this.serialPort.on('close', () => {
+            this.log.info('Serial port closed');
+        });
+        this.serialPort.on('pause', () => {
+            this.log.info('Serial port paused');
+        });
+    }
+    hasRightChecksum(data) {
+        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
+        return (checksumCalculated == data[4]);
+    }
+    onDataReady(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.log.debug("onDataReady() called.");
+            // TODO: change this to loglevel debug later on
+            this.log.info(`Data received: "${data}"`);
+            // check length and checksum
+            if (data.length == 5 && this.hasRightChecksum(data)) {
+                this.log.info("Checksum correct");
+            }
+            else {
+                this.log.warn("Checksum not correct");
+            }
+        });
     }
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     onReady() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.log.debug("onReady() called.");
             // Initialize your adapter here
-            // The adapters config (in the instance object everything under the attribute "native") is accessible via
-            // this.config:
-            this.log.info("ADAPTER VALLOXSERIAL STARTED!");
-            this.log.info("config option1: " + this.config.option1);
-            this.log.info("config option2: " + this.config.option2);
+            // TODO: init states
             /*
             For every state in the system there has to be also an object of type state
             Here a simple template for a boolean variable named "testVariable"
@@ -73,6 +116,9 @@ class ValloxSerial extends utils.Adapter {
      */
     onUnload(callback) {
         try {
+            this.log.debug("onUnload() called.");
+            this.serialPort.pause;
+            this.serialPort.close();
             this.log.info("cleaned everything up...");
             callback();
         }
@@ -84,6 +130,7 @@ class ValloxSerial extends utils.Adapter {
      * Is called if a subscribed object changes
      */
     onObjectChange(id, obj) {
+        this.log.debug("onObjectChange() called.");
         if (obj) {
             // The object was changed
             this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
@@ -97,6 +144,7 @@ class ValloxSerial extends utils.Adapter {
      * Is called if a subscribed state changes
      */
     onStateChange(id, state) {
+        this.log.debug("onStateChange() called.");
         if (state) {
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);

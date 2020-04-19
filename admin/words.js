@@ -2,40 +2,28 @@
 "use strict";
 
 systemDictionary = {
-	"template adapter settings": {
-		"en": "Adapter settings for template",
-		"de": "Adaptereinstellungen für template",
-		"ru": "Настройки адаптера для template",
-		"pt": "Configurações do adaptador para template",
-		"nl": "Adapterinstellingen voor template",
-		"fr": "Paramètres d'adaptateur pour template",
-		"it": "Impostazioni dell'adattatore per template",
-		"es": "Ajustes del adaptador para template",
-		"pl": "Ustawienia adaptera dla template",
-		"zh-cn": "template的适配器设置"
+	"Main settings": {
+		"en": "Main settings",
+		"de": "Haupteinstellungen"
 	},
-	"option1": {
-		"en": "option1",
-		"de": "Option 1",
-		"ru": "Опция 1",
-		"pt": "Opção 1",
-		"nl": "Optie 1",
-		"fr": "Option 1",
-		"it": "opzione 1",
-		"es": "Opción 1",
-		"pl": "opcja 1",
-		"zh-cn": "选项1"
+	"Serial port device": {
+		"en": "Serial port device",
+		"de": "Device für serielle Schnittstelle"
 	},
-	"option2": {
-		"en": "option2",
-		"de": "Option 2",
-		"ru": "option2",
-		"pt": "opção 2",
-		"nl": "Optie 2",
-		"fr": "Option 2",
-		"it": "opzione 2",
-		"es": "opcion 2",
-		"pl": "Opcja 2",
-		"zh-cn": "选项2"
+	"Absolute path to serial port device address": {
+		"en": "Absolute path to serial port device address, e.g. /dev/ttyUSB0",
+		"de": "Absoluter Pfad zum Device für den seriellen Port, z.B. /dev/ttyUSB0"
+	},
+	"Advanced settings": {
+		"en": "Advanced settings",
+		"de": "Erweiterte Einstellungen"
+	},
+	"Log datagrams": {
+		"en": "Log datagrams",
+		"de": "Datagramme loggen"
+	},
+	"If set, all datagrams are logged with level debug.": {
+		"en": "If set, all datagrams are logged with level debug.",
+		"de": "Falls aktiviert werden alle Datagramme bei Loglevel Debug ins Log geschrieben."
 	}
 };

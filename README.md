@@ -114,7 +114,8 @@ The module folder contains a shell script `start-remote-debugging.sh` that start
 
 
 ## TODO
-* Extend `start-remote-debugging.sh` to test for already running adapter instances 
+* Extend `start-remote-debugging.sh` to test for already running adapter instances
+* Reflect, if the serial port should run in flowing mode or rather [do some kind of polling](https://serialport.io/docs/api-stream#serialport-pause)
 
 ## Changelog
  
