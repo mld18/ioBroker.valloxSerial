@@ -12,6 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("@iobroker/adapter-core");
 const SerialPort = require("serialport");
 class ValloxSerial extends utils.Adapter {
+    /**
+     * Constructor: Bind event handlers.
+     *
+     * @param options
+     */
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "valloxserial" }));
         this.on("ready", this.onReady.bind(this));
@@ -20,6 +25,9 @@ class ValloxSerial extends utils.Adapter {
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
+    /**
+     * Monitor all stuff that happens with the serial port.
+     */
     bindPortEvents() {
         this.serialPort.on('error', (err) => {
             this.log.error(`PROBLEM WITH SERIAL PORT: ${err.message}`);
@@ -34,15 +42,12 @@ class ValloxSerial extends utils.Adapter {
             this.log.info('Serial port paused');
         });
     }
-    hasRightChecksum(data) {
-        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
-        return (checksumCalculated == data[4]);
-    }
     onDataReady(data) {
         return __awaiter(this, void 0, void 0, function* () {
             this.log.debug("onDataReady() called.");
             // TODO: change this to loglevel debug later on
-            this.log.info(`Data received: "${data}"`);
+            let datagramString = this.toHexStringDatagram(data);
+            this.log.info(`Data received: "${datagramString}"`);
             // check length and checksum
             if (data.length == 5 && this.hasRightChecksum(data)) {
                 this.log.info("Checksum correct");
@@ -73,8 +78,9 @@ class ValloxSerial extends utils.Adapter {
                Delimiter parser for separating datagrams */
             { delimiter: [0x1] }));
             this.datagramSource.on("data", this.onDataReady.bind(this));
-            // Initialize your adapter here
-            // TODO: init states
+            //
+            // TODO: replace section with real states and channels (still code from template)
+            //
             /*
             For every state in the system there has to be also an object of type state
             Here a simple template for a boolean variable named "testVariable"
@@ -153,6 +159,38 @@ class ValloxSerial extends utils.Adapter {
             // The state was deleted
             this.log.info(`state ${id} deleted`);
         }
+    }
+    // /**
+    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+    //  * Using this method requires "common.message" property to be set to true in io-package.json
+    //  */
+    // private onMessage(obj: ioBroker.Message): void {
+    // 	if (typeof obj === "object" && obj.message) {
+    // 		if (obj.command === "send") {
+    // 			// e.g. send email or pushover or whatever
+    // 			this.log.info("send command");
+    // 			// Send response in callback if required
+    // 			if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
+    // 		}
+    // 	}
+    // }
+    // ////////////////////////////////////////////////////////////////
+    // Section with datagram functions
+    // TODO: Put these function in a separate Utils class
+    // ////////////////////////////////////////////////////////////////
+    hasRightChecksum(data) {
+        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
+        return (checksumCalculated == data[4]);
+    }
+    toHexString(byte, prefix = false) {
+        return (prefix ? "0x" : "") + (("0" + (byte & 0xFF).toString(16)).slice(-2));
+    }
+    toHexStringDatagram(bytes, prefix = false) {
+        let result = "";
+        bytes.forEach(byte => {
+            result += this.toHexString(byte, prefix) + " ";
+        });
+        return result;
     }
 }
 if (module.parent) {
