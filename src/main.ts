@@ -1,9 +1,6 @@
 import * as utils from "@iobroker/adapter-core";
 import * as SerialPort from "serialport";
 
-// Type alias for imported types
-type DelimiterParser = SerialPort.parsers.Delimiter;
-
 // Augment the adapter.config object with the actual types
 declare global {
 	// eslint-disable-next-line @typescript-eslint/no-namespace
@@ -17,6 +14,9 @@ declare global {
 			// Or use a catch-all approach
 		    // [key: string]: any;
 		}
+
+		type DatagramSender = "Main" | "Panel-1" | "Panel-2" | "Panel-3" | "Panel-4" | "Panel-5" | "Panel-6" | "Panel-7" | "Panel-8" | "Panel-9" | undefined;
+		type DatagramReceiver = "All" | "Main" | "All Panels" | "Panel-1" | "Panel-2" | "Panel-3" | "Panel-4" | "Panel-5" | "Panel-6" | "Panel-7" | "Panel-8" | "Panel-9" | undefined;
 	}
 }
 
@@ -27,6 +27,11 @@ class ValloxSerial extends utils.Adapter {
 	serialPort! : SerialPort
 	datagramSource! : SerialPort.parsers.Delimiter;
 
+	/**
+	 * Constructor: Bind event handlers.
+	 * 
+	 * @param options 
+	 */
 	public constructor(options: Partial<ioBroker.AdapterOptions> = {}) {
 		super({
 			...options,
@@ -39,6 +44,9 @@ class ValloxSerial extends utils.Adapter {
 		this.on("unload", this.onUnload.bind(this));
 	}
 
+	/**
+	 * Monitor all stuff that happens with the serial port.
+	 */
 	private bindPortEvents() {
 		this.serialPort.on('error', (err) => {
 			this.log.error(`PROBLEM WITH SERIAL PORT: ${err.message}`);
@@ -54,15 +62,11 @@ class ValloxSerial extends utils.Adapter {
 		});
 	}
 
-	private hasRightChecksum(data : number[]) : boolean {
-		let checksumCalculated : number = (data[0]+data[1]+data[2]+data[3]+0x01) & 0xFF;
-    	return (checksumCalculated == data[4]);
-	}
-
 	private async onDataReady(data : number[]): Promise<void> {
 		this.log.debug("onDataReady() called.");
 		// TODO: change this to loglevel debug later on
-		this.log.info(`Data received: "${data}"`);
+		let datagramString: string = this.toHexStringDatagram(data);
+		this.log.info(`Data received: "${datagramString}"`);
 
 		// check length and checksum
 		if (data.length == 5 && this.hasRightChecksum(data)) {
@@ -95,8 +99,11 @@ class ValloxSerial extends utils.Adapter {
 			{ delimiter: [0x1] }
 		));
 		this.datagramSource.on("data", this.onDataReady.bind(this));
-		// Initialize your adapter here
-		// TODO: init states
+
+
+		//
+		// TODO: replace section with real states and channels (still code from template)
+		//
 		/*
 		For every state in the system there has to be also an object of type state
 		Here a simple template for a boolean variable named "testVariable"
@@ -199,6 +206,28 @@ class ValloxSerial extends utils.Adapter {
 	// 		}
 	// 	}
 	// }
+
+
+	// ////////////////////////////////////////////////////////////////
+	// Section with datagram functions
+	// TODO: Put these function in a separate Utils class
+	// ////////////////////////////////////////////////////////////////
+	private hasRightChecksum(data: number[]): boolean {
+		let checksumCalculated : number = (data[0]+data[1]+data[2]+data[3]+0x01) & 0xFF;
+    	return (checksumCalculated == data[4]);
+	}
+
+	private toHexString(byte: number, prefix: boolean = false): string {
+		return (prefix?"0x":"") + (("0" + (byte & 0xFF).toString(16)).slice(-2));
+	}
+
+	private toHexStringDatagram(bytes: number[], prefix: boolean = false): string {
+		let result: string = "";
+		bytes.forEach(byte => { 
+			result += this.toHexString(byte, prefix) + " ";
+		});
+		return result;
+	}
 
 }
 

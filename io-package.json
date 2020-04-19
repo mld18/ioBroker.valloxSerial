@@ -60,5 +60,305 @@
 		"debugLogDatagrams": false
 	},
 	"objects": [],
-	"instanceObjects": []
+	"instanceObjects": [
+		{
+            "_id": "Readings",
+            "type": "channel",
+            "common": {
+                "role": "Readings",
+				"name": "",
+				"desc": "Contains all values send to operator panels as read-only states"
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.power",
+            "type": "state",
+            "common": {
+                "name": "Power",
+                "type": "boolean",
+                "role": "readings.power",
+                "read": true,
+				"write": false,
+				"desc": "Power state (on/off)",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x01"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.co2Adjust",
+            "type": "state",
+            "common": {
+                "name": "CO2 adjust",
+                "type": "boolean",
+                "role": "readings.co2adjust",
+                "read": true,
+				"write": false,
+				"desc": "CO2 adjust state",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x02"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.humidityAdjust",
+            "type": "state",
+            "common": {
+                "name": "Humidity adjust",
+                "type": "boolean",
+                "role": "readings.humidityadjust",
+                "read": true,
+				"write": false,
+				"desc": "% relative humidity adjust state",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x04"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.heating",
+            "type": "state",
+            "common": {
+                "name": "Heating",
+                "type": "boolean",
+                "role": "readings.heating",
+                "read": true,
+				"write": false,
+				"desc": "Heating state",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x08"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.filterguard",
+            "type": "state",
+            "common": {
+                "name": "Filterguard",
+                "type": "boolean",
+                "role": "readings.filterguard",
+                "read": true,
+				"write": false,
+				"desc": "Filterguard indicator",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x10"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.heatingIndicator",
+            "type": "state",
+            "common": {
+                "name": "Heating indicator",
+                "type": "boolean",
+                "role": "readings.heatingindicator",
+                "read": true,
+				"write": false,
+				"desc": "Heating indicator",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x20"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.error",
+            "type": "state",
+            "common": {
+                "name": "Error",
+                "type": "boolean",
+                "role": "readings.error",
+                "read": true,
+				"write": false,
+				"desc": "Error indicator",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x40"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.serviceReminder",
+            "type": "state",
+            "common": {
+                "name": "Service reminder",
+                "type": "boolean",
+                "role": "readings.servicereminder",
+                "read": true,
+				"write": false,
+				"desc": "Service reminder",
+				"custom": {
+					"datagramValueHexCode": ["0xA3"],
+					"stateBitPattern": ["0x80"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.fanSpeed",
+            "type": "state",
+            "common": {
+                "name": "Fan speed",
+                "type": "number",
+                "role": "readings.fanspeed",
+                "read": true,
+				"write": false,
+				"min": 0,
+				"max": 8,
+				"desc": "Fan speed is discretely indicated by a level between 1 and 8",
+				"custom": {
+					"datagramValueHexCode": ["0x29"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.humidity",
+            "type": "state",
+            "common": {
+                "name": "Current relative humidity",
+                "type": "number",
+                "role": "readings.humidity",
+                "read": true,
+				"write": false,
+				"unit": "%",
+				"desc": "",
+				"custom": {
+					"datagramValueHexCode": ["0x2A"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.co2Level",
+            "type": "state",
+            "common": {
+                "name": "Current level of CO2",
+                "type": "number",
+                "role": "readings.co2level",
+                "read": true,
+				"write": false,
+				"desc": "Last measured amount of CO2",
+				"custom": {
+					"datagramValueHexCode": ["0x2B", "0x2C"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.humiditySensor1",
+            "type": "state",
+            "common": {
+                "name": "%RH from sensor 1",
+                "type": "number",
+                "role": "readings.humiditysensor1",
+                "read": true,
+				"write": false,
+				"unit": "%",
+				"desc": "Percentage of relative humidity from sensor 1",
+				"custom": {
+					"datagramValueHexCode": ["0x2F"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.humiditySensor2",
+            "type": "state",
+            "common": {
+                "name": "%RH from sensor 2",
+                "type": "number",
+                "role": "readings.humiditysensor2",
+                "read": true,
+				"write": false,
+				"unit": "%",
+				"desc": "Percentage of relative humidity from sensor 2",
+				"custom": {
+					"datagramValueHexCode": ["0x30"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.outsideTemperature",
+            "type": "state",
+            "common": {
+                "name": "Outside temperature",
+                "type": "number",
+                "role": "readings.outsidetemperature",
+                "read": true,
+				"write": false,
+				"unit": "°C",
+				"desc": "Measured temperature from outside air duct",
+				"custom": {
+					"datagramValueHexCode": ["0x32"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.exhaustTemperature",
+            "type": "state",
+            "common": {
+                "name": "Exhaust temperature",
+                "type": "number",
+                "role": "readings.exhausttemperature",
+                "read": true,
+				"write": false,
+				"unit": "°C",
+				"desc": "Measured temperature from exhaust air duct",
+				"custom": {
+					"datagramValueHexCode": ["0x33"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.insideTemperature",
+            "type": "state",
+            "common": {
+                "name": "Inside temperature",
+                "type": "number",
+                "role": "readings.insidetemperature",
+                "read": true,
+				"write": false,
+				"unit": "°C",
+				"desc": "Measured temperature from inside air duct",
+				"custom": {
+					"datagramValueHexCode": ["0x34"]
+				}				
+            },
+            "native": {}
+		},
+		{
+            "_id": "Readings.incomingTemperature",
+            "type": "state",
+            "common": {
+                "name": "Incoming temperature",
+                "type": "number",
+                "role": "readings.incomingtemperature",
+                "read": true,
+				"write": false,
+				"unit": "°C",
+				"desc": "Measured temperature from incoming air duct",
+				"custom": {
+					"datagramValueHexCode": ["0x35"]
+				}				
+            },
+            "native": {}
+		}
+	]
 }
