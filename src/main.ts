@@ -14,11 +14,11 @@ declare global {
 			// Or use a catch-all approach
 		    // [key: string]: any;
 		}
-
-		type DatagramSender = "Main" | "Panel-1" | "Panel-2" | "Panel-3" | "Panel-4" | "Panel-5" | "Panel-6" | "Panel-7" | "Panel-8" | "Panel-9" | undefined;
-		type DatagramReceiver = "All" | "Main" | "All Panels" | "Panel-1" | "Panel-2" | "Panel-3" | "Panel-4" | "Panel-5" | "Panel-6" | "Panel-7" | "Panel-8" | "Panel-9" | undefined;
 	}
 }
+
+type DatagramSender = "MainUnit" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
+type DatagramReceiver = "All" | "MainUnit" | "All Panels" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
 
 
 
@@ -64,15 +64,35 @@ class ValloxSerial extends utils.Adapter {
 
 	private async onDataReady(data : number[]): Promise<void> {
 		this.log.debug("onDataReady() called.");
-		// TODO: change this to loglevel debug later on
 		let datagramString: string = this.toHexStringDatagram(data);
-		this.log.info(`Data received: "${datagramString}"`);
 
 		// check length and checksum
 		if (data.length == 5 && this.hasRightChecksum(data)) {
-			this.log.info("Checksum correct");
+			this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
+			if (this.decodeSender(data[0]) == "MainUnit") {
+				// TODO: Temporary code for experimentation
+				let reading: number = data[3];
+				switch (data[2]) {
+					case 0x29:
+						this.log.debug(`Set Readings.fanSpeed to ${reading}`);
+						await this.setStateAsync("Readings.fanSpeed", { val: reading, ack: false });
+						break;
+					case 0xA3:
+						
+						let powerState: boolean = (reading & 0x01) != 0;
+						let serviceReminder: boolean = (reading & 0x80) != 0;
+						this.log.debug(`power: ${powerState}, serviceReminder: ${serviceReminder}`);
+						await this.setStateAsync("Readings.power", { val: powerState, ack: false });
+						await this.setStateAsync("Readings.serviceReminder", { val: serviceReminder, ack: false });
+						break;
+
+				
+					default:
+						break;
+				}
+			} 
 		} else {
-			this.log.warn("Checksum not correct");
+			this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
 		}
 	}
 
@@ -228,6 +248,23 @@ class ValloxSerial extends utils.Adapter {
 		});
 		return result;
 	}
+
+	private decodeSender(senderByte: number): DatagramSender {
+		let codeSenderMap: {[key: string]: DatagramSender} = {
+			0x11: "MainUnit",
+			0x21: "Panel.1",
+			0x22: "Panel.2",
+			0x23: "Panel.3",
+			0x24: "Panel.4",
+			0x25: "Panel.5",
+			0x26: "Panel.6",
+			0x27: "Panel.7",
+			0x28: "Panel.8",
+			0x29: "Panel.9"
+		};
+
+		return codeSenderMap[senderByte];
+	};
 
 }
 

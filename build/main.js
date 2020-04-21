@@ -45,15 +45,32 @@ class ValloxSerial extends utils.Adapter {
     onDataReady(data) {
         return __awaiter(this, void 0, void 0, function* () {
             this.log.debug("onDataReady() called.");
-            // TODO: change this to loglevel debug later on
             let datagramString = this.toHexStringDatagram(data);
-            this.log.info(`Data received: "${datagramString}"`);
             // check length and checksum
             if (data.length == 5 && this.hasRightChecksum(data)) {
-                this.log.info("Checksum correct");
+                this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
+                if (this.decodeSender(data[0]) == "MainUnit") {
+                    // TODO: Temporary code for experimentation
+                    let reading = data[3];
+                    switch (data[2]) {
+                        case 0x29:
+                            this.log.debug(`Set Readings.fanSpeed to ${reading}`);
+                            yield this.setStateAsync("Readings.fanSpeed", { val: reading, ack: false });
+                            break;
+                        case 0xA3:
+                            let powerState = (reading & 0x01) != 0;
+                            let serviceReminder = (reading & 0x80) != 0;
+                            this.log.debug(`power: ${powerState}, serviceReminder: ${serviceReminder}`);
+                            yield this.setStateAsync("Readings.power", { val: powerState, ack: false });
+                            yield this.setStateAsync("Readings.serviceReminder", { val: serviceReminder, ack: false });
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             else {
-                this.log.warn("Checksum not correct");
+                this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
             }
         });
     }
@@ -192,6 +209,22 @@ class ValloxSerial extends utils.Adapter {
         });
         return result;
     }
+    decodeSender(senderByte) {
+        let codeSenderMap = {
+            0x11: "MainUnit",
+            0x21: "Panel.1",
+            0x22: "Panel.2",
+            0x23: "Panel.3",
+            0x24: "Panel.4",
+            0x25: "Panel.5",
+            0x26: "Panel.6",
+            0x27: "Panel.7",
+            0x28: "Panel.8",
+            0x29: "Panel.9"
+        };
+        return codeSenderMap[senderByte];
+    }
+    ;
 }
 if (module.parent) {
     // Export the constructor in compact mode
