@@ -82,8 +82,8 @@
 				"write": false,
 				"desc": "Power state (on/off)",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x01"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x01"
 				}				
             },
             "native": {}
@@ -99,8 +99,8 @@
 				"write": false,
 				"desc": "CO2 adjust state",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x02"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x02"
 				}				
             },
             "native": {}
@@ -116,8 +116,8 @@
 				"write": false,
 				"desc": "% relative humidity adjust state",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x04"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x04"
 				}				
             },
             "native": {}
@@ -133,8 +133,8 @@
 				"write": false,
 				"desc": "Heating state",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x08"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x08"
 				}				
             },
             "native": {}
@@ -150,8 +150,8 @@
 				"write": false,
 				"desc": "Filterguard indicator",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x10"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x10"
 				}				
             },
             "native": {}
@@ -167,8 +167,8 @@
 				"write": false,
 				"desc": "Heating indicator",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x20"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x20"
 				}				
             },
             "native": {}
@@ -184,8 +184,8 @@
 				"write": false,
 				"desc": "Error indicator",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x40"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x40"
 				}				
             },
             "native": {}
@@ -201,8 +201,8 @@
 				"write": false,
 				"desc": "Service reminder",
 				"custom": {
-					"datagramValueHexCode": ["0xA3"],
-					"stateBitPattern": ["0x80"]
+					"fieldCodes": ["0xA3"],
+					"fieldBitPattern": "0x80"
 				}				
             },
             "native": {}
@@ -220,7 +220,7 @@
 				"max": 8,
 				"desc": "Fan speed is discretely indicated by a level between 1 and 8",
 				"custom": {
-					"datagramValueHexCode": ["0x29"]
+					"fieldCodes": ["0x29"]
 				}				
             },
             "native": {}
@@ -237,7 +237,7 @@
 				"unit": "%",
 				"desc": "",
 				"custom": {
-					"datagramValueHexCode": ["0x2A"]
+					"fieldCodes": ["0x2A"]
 				}				
             },
             "native": {}
@@ -253,7 +253,7 @@
 				"write": false,
 				"desc": "Last measured amount of CO2",
 				"custom": {
-					"datagramValueHexCode": ["0x2B", "0x2C"]
+					"fieldCodes": ["0x2B", "0x2C"]
 				}				
             },
             "native": {}
@@ -270,7 +270,7 @@
 				"unit": "%",
 				"desc": "Percentage of relative humidity from sensor 1",
 				"custom": {
-					"datagramValueHexCode": ["0x2F"]
+					"fieldCodes": ["0x2F"]
 				}				
             },
             "native": {}
@@ -287,7 +287,7 @@
 				"unit": "%",
 				"desc": "Percentage of relative humidity from sensor 2",
 				"custom": {
-					"datagramValueHexCode": ["0x30"]
+					"fieldCodes": ["0x30"]
 				}				
             },
             "native": {}
@@ -304,7 +304,7 @@
 				"unit": "°C",
 				"desc": "Measured temperature from outside air duct",
 				"custom": {
-					"datagramValueHexCode": ["0x32"]
+					"fieldCodes": ["0x32"]
 				}				
             },
             "native": {}
@@ -321,7 +321,7 @@
 				"unit": "°C",
 				"desc": "Measured temperature from exhaust air duct",
 				"custom": {
-					"datagramValueHexCode": ["0x33"]
+					"fieldCodes": ["0x33"]
 				}				
             },
             "native": {}
@@ -338,7 +338,7 @@
 				"unit": "°C",
 				"desc": "Measured temperature from inside air duct",
 				"custom": {
-					"datagramValueHexCode": ["0x34"]
+					"fieldCodes": ["0x34"]
 				}				
             },
             "native": {}
@@ -355,7 +355,7 @@
 				"unit": "°C",
 				"desc": "Measured temperature from incoming air duct",
 				"custom": {
-					"datagramValueHexCode": ["0x35"]
+					"fieldCodes": ["0x35"]
 				}				
             },
             "native": {}
