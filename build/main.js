@@ -19,10 +19,10 @@ class ValloxSerial extends utils.Adapter {
      */
     constructor(options = {}) {
         super(Object.assign(Object.assign({}, options), { name: "valloxserial" }));
+        this.datagramStateMap = [];
         this.on("ready", this.onReady.bind(this));
         this.on("objectChange", this.onObjectChange.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
-        // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
     /**
@@ -54,8 +54,15 @@ class ValloxSerial extends utils.Adapter {
                     let reading = data[3];
                     switch (data[2]) {
                         case 0x29:
-                            this.log.debug(`Set Readings.fanSpeed to ${reading}`);
-                            yield this.setStateAsync("Readings.fanSpeed", { val: reading, ack: false });
+                            let objectId = "Readings.fanSpeed";
+                            let fanSpeedValue = this.decodeFanSpeed(data[3]);
+                            try {
+                                let hasChangedState = yield this.setStateChangedAsync(objectId, { val: fanSpeedValue, ack: true });
+                                this.log.debug(`Object ${objectId} state changed: ${hasChangedState}`);
+                            }
+                            catch (err) {
+                                this.log.error(`Unable to change state of ${objectId}: ${err}`);
+                            }
                             break;
                         case 0xA3:
                             let powerState = (reading & 0x01) != 0;
@@ -95,43 +102,8 @@ class ValloxSerial extends utils.Adapter {
                Delimiter parser for separating datagrams */
             { delimiter: [0x1] }));
             this.datagramSource.on("data", this.onDataReady.bind(this));
-            //
-            // TODO: replace section with real states and channels (still code from template)
-            //
-            /*
-            For every state in the system there has to be also an object of type state
-            Here a simple template for a boolean variable named "testVariable"
-            Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-            */
-            yield this.setObjectAsync("testVariable", {
-                type: "state",
-                common: {
-                    name: "testVariable",
-                    type: "boolean",
-                    role: "indicator",
-                    read: true,
-                    write: true,
-                },
-                native: {},
-            });
-            // in this template all states changes inside the adapters namespace are subscribed
-            this.subscribeStates("*");
-            /*
-            setState examples
-            you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-            */
-            // the variable testVariable is set to true as command (ack=false)
-            yield this.setStateAsync("testVariable", true);
-            // same thing, but the value is flagged "ack"
-            // ack should be always set to true if the value is received from or acknowledged from the target system
-            yield this.setStateAsync("testVariable", { val: true, ack: true });
-            // same thing, but the state is deleted after 30s (getState will return null afterwards)
-            yield this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
-            // examples for the checkPassword/checkGroup functions
-            let result = yield this.checkPasswordAsync("admin", "iobroker");
-            this.log.info("check user admin pw iobroker: " + result);
-            result = yield this.checkGroupAsync("admin", "admin");
-            this.log.info("check group user admin group admin: " + result);
+            this.buildDatagramStateMap();
+            // TODO: Build object structure for commands (see history for code examples)
         });
     }
     /**
@@ -177,20 +149,20 @@ class ValloxSerial extends utils.Adapter {
             this.log.info(`state ${id} deleted`);
         }
     }
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.message" property to be set to true in io-package.json
-    //  */
-    // private onMessage(obj: ioBroker.Message): void {
-    // 	if (typeof obj === "object" && obj.message) {
-    // 		if (obj.command === "send") {
-    // 			// e.g. send email or pushover or whatever
-    // 			this.log.info("send command");
-    // 			// Send response in callback if required
-    // 			if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-    // 		}
-    // 	}
-    // }
+    // ////////////////////////////////////////////////////////////////
+    // Section with local helpers
+    // ////////////////////////////////////////////////////////////////
+    buildDatagramStateMap() {
+        var _a, _b, _c, _d;
+        for (let obj of this.ioPack.instanceObjects) {
+            let codes = ((_b = (_a = obj === null || obj === void 0 ? void 0 : obj.common) === null || _a === void 0 ? void 0 : _a.custom) === null || _b === void 0 ? void 0 : _b.fieldCodes) || [];
+            for (let code of codes) {
+                let bitPatternValue = (!!((_d = (_c = obj === null || obj === void 0 ? void 0 : obj.common) === null || _c === void 0 ? void 0 : _c.custom) === null || _d === void 0 ? void 0 : _d.fieldBitPattern)) ?
+                    parseInt(obj.common.custom.fieldBitPattern) : undefined;
+                this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id });
+            }
+        }
+    }
     // ////////////////////////////////////////////////////////////////
     // Section with datagram functions
     // TODO: Put these function in a separate Utils class
@@ -223,6 +195,11 @@ class ValloxSerial extends utils.Adapter {
             0x29: "Panel.9"
         };
         return codeSenderMap[senderByte];
+    }
+    ;
+    decodeFanSpeed(reading) {
+        let fanSpeed = Math.log2(reading + 1);
+        return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
     }
     ;
 }

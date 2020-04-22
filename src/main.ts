@@ -20,12 +20,18 @@ declare global {
 type DatagramSender = "MainUnit" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
 type DatagramReceiver = "All" | "MainUnit" | "All Panels" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
 
+type DatagramMapping = {
+	"fieldCode": number;
+	"fieldBitPattern": number | undefined;
+	"id": string;
+  }
 
 
 class ValloxSerial extends utils.Adapter {
 	// Member variables
 	serialPort! : SerialPort
 	datagramSource! : SerialPort.parsers.Delimiter;
+	datagramStateMap: Array<DatagramMapping> = [];
 
 	/**
 	 * Constructor: Bind event handlers.
@@ -40,7 +46,6 @@ class ValloxSerial extends utils.Adapter {
 		this.on("ready", this.onReady.bind(this));
 		this.on("objectChange", this.onObjectChange.bind(this));
 		this.on("stateChange", this.onStateChange.bind(this));
-		// this.on("message", this.onMessage.bind(this));
 		this.on("unload", this.onUnload.bind(this));
 	}
 
@@ -74,8 +79,18 @@ class ValloxSerial extends utils.Adapter {
 				let reading: number = data[3];
 				switch (data[2]) {
 					case 0x29:
-						this.log.debug(`Set Readings.fanSpeed to ${reading}`);
-						await this.setStateAsync("Readings.fanSpeed", { val: reading, ack: false });
+						let objectId = "Readings.fanSpeed";
+						let fanSpeedValue = this.decodeFanSpeed(data[3]);
+
+						try {
+							let hasChangedState = await this.setStateChangedAsync(objectId, {val: fanSpeedValue, ack: true});
+							this.log.debug(`Object ${objectId} state changed: ${hasChangedState}`);
+						} catch (err) {
+							this.log.error(`Unable to change state of ${objectId}: ${err}`);
+						}
+
+						
+
 						break;
 					case 0xA3:
 						
@@ -120,50 +135,9 @@ class ValloxSerial extends utils.Adapter {
 		));
 		this.datagramSource.on("data", this.onDataReady.bind(this));
 
+		this.buildDatagramStateMap();
 
-		//
-		// TODO: replace section with real states and channels (still code from template)
-		//
-		/*
-		For every state in the system there has to be also an object of type state
-		Here a simple template for a boolean variable named "testVariable"
-		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-		*/
-		await this.setObjectAsync("testVariable", {
-			type: "state",
-			common: {
-				name: "testVariable",
-				type: "boolean",
-				role: "indicator",
-				read: true,
-				write: true,
-			},
-			native: {},
-		});
-
-		// in this template all states changes inside the adapters namespace are subscribed
-		this.subscribeStates("*");
-
-		/*
-		setState examples
-		you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-		*/
-		// the variable testVariable is set to true as command (ack=false)
-		await this.setStateAsync("testVariable", true);
-
-		// same thing, but the value is flagged "ack"
-		// ack should be always set to true if the value is received from or acknowledged from the target system
-		await this.setStateAsync("testVariable", { val: true, ack: true });
-
-		// same thing, but the state is deleted after 30s (getState will return null afterwards)
-		await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
-
-		// examples for the checkPassword/checkGroup functions
-		let result = await this.checkPasswordAsync("admin", "iobroker");
-		this.log.info("check user admin pw iobroker: " + result);
-
-		result = await this.checkGroupAsync("admin", "admin");
-		this.log.info("check group user admin group admin: " + result);
+		// TODO: Build object structure for commands (see history for code examples)
 	}
 
 	/**
@@ -211,22 +185,20 @@ class ValloxSerial extends utils.Adapter {
 		}
 	}
 
-	// /**
-	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-	//  * Using this method requires "common.message" property to be set to true in io-package.json
-	//  */
-	// private onMessage(obj: ioBroker.Message): void {
-	// 	if (typeof obj === "object" && obj.message) {
-	// 		if (obj.command === "send") {
-	// 			// e.g. send email or pushover or whatever
-	// 			this.log.info("send command");
 
-	// 			// Send response in callback if required
-	// 			if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-	// 		}
-	// 	}
-	// }
-
+	// ////////////////////////////////////////////////////////////////
+	// Section with local helpers
+	// ////////////////////////////////////////////////////////////////
+	private buildDatagramStateMap(): void {
+		for (let obj of this.ioPack.instanceObjects) {
+			let codes = obj?.common?.custom?.fieldCodes || [];
+			for (let code of codes) {
+				let bitPatternValue: number | undefined = (!!obj?.common?.custom?.fieldBitPattern) ?
+					parseInt(obj.common.custom.fieldBitPattern) : undefined;
+				this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id });
+			}
+		}
+	}
 
 	// ////////////////////////////////////////////////////////////////
 	// Section with datagram functions
@@ -264,6 +236,11 @@ class ValloxSerial extends utils.Adapter {
 		};
 
 		return codeSenderMap[senderByte];
+	};
+
+	private decodeFanSpeed(reading: number): number | undefined {
+		let fanSpeed: number = Math.log2(reading + 1);
+		return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
 	};
 
 }
