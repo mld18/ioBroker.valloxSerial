@@ -110,7 +110,7 @@ For the computer with the IDE:
 This project contains a `launch.json` config file for Visual Studio Code. This file contains an *attach* configuration that allows to debug the code which runs on the other machine. 
 
 For the ioBroker machine:
-The module folder contains a shell script `start-remote-debugging.sh` that starts Node.js with the adapter instance in debug mode and a breakpoint at line 1 of `main.js`.
+The module folder contains a shell script `start-remote-debugging.sh` that starts Node.js with the adapter instance in debug mode and a breakpoint at line 1 of `main.ts`.
 
 
 ## TODO
