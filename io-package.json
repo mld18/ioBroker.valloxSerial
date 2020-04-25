@@ -220,7 +220,8 @@
 				"max": 8,
 				"desc": "Fan speed is discretely indicated by a level between 1 and 8",
 				"custom": {
-					"fieldCodes": ["0x29"]
+					"fieldCodes": ["0x29"],
+					"encoding": "fanSpeed"
 				}				
             },
             "native": {}

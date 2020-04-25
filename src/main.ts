@@ -24,6 +24,7 @@ type DatagramMapping = {
 	"fieldCode": number;
 	"fieldBitPattern": number | undefined;
 	"id": string;
+	"encoding": Function;
   }
 
 
@@ -79,14 +80,15 @@ class ValloxSerial extends utils.Adapter {
 				let reading: number = data[3];
 				switch (data[2]) {
 					case 0x29:
-						let objectId = "Readings.fanSpeed";
-						let fanSpeedValue = this.decodeFanSpeed(data[3]);
-
+						let mappings = this.getDatagramMappingsByRequestCode(data[5]);
+						let mapping = mappings[0];
+						let objectId = mapping.id;
+						let value = mapping.encoding(data[3]);
 						try {
-							let hasChangedState = await this.setStateChangedAsync(objectId, {val: fanSpeedValue, ack: true});
-							this.log.debug(`Object ${objectId} state changed: ${hasChangedState}`);
+							let hasChangedState = await this.setStateChangedAsync(objectId, {val: value, ack: true});
+							this.log.info(`Object ${objectId} state changed: ${hasChangedState}`);
 						} catch (err) {
-							this.log.error(`Unable to change state of ${objectId}: ${err}`);
+							this.log.info(`Unable to change state of ${objectId}: ${err}`);
 						}
 
 						
@@ -189,16 +191,40 @@ class ValloxSerial extends utils.Adapter {
 	// ////////////////////////////////////////////////////////////////
 	// Section with local helpers
 	// ////////////////////////////////////////////////////////////////
+	/**
+	 * Fills the member variablethis.datagramStateMap with a mapping from
+	 * datagram request codes to object IDs. Therefore the instanceObjects
+	 * configuration from io-package.json is read.
+	 */
 	private buildDatagramStateMap(): void {
 		for (let obj of this.ioPack.instanceObjects) {
 			let codes = obj?.common?.custom?.fieldCodes || [];
+			
+			let encodingFunction = this.decodeIdentity;
+			switch(obj?.common?.custom?.encoding) {
+				case "fanSpeed":
+					encodingFunction=this.decodeFanSpeed;
+					break;
+			}
+
 			for (let code of codes) {
 				let bitPatternValue: number | undefined = (!!obj?.common?.custom?.fieldBitPattern) ?
 					parseInt(obj.common.custom.fieldBitPattern) : undefined;
-				this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id });
+				this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id, encoding: encodingFunction});
 			}
 		}
 	}
+
+	private getDatagramMappingsByRequestCode(fieldCode: number): Array<DatagramMapping> {
+		let result = [];
+		for (let mapping of this.datagramStateMap) {
+		  if (mapping.fieldCode == fieldCode) {
+			result.push(mapping);
+		  }
+		}
+	  
+		return result;
+	  }
 
 	// ////////////////////////////////////////////////////////////////
 	// Section with datagram functions
@@ -237,6 +263,10 @@ class ValloxSerial extends utils.Adapter {
 
 		return codeSenderMap[senderByte];
 	};
+
+	private decodeIdentity(val: any): any {
+		return val;
+	}
 
 	private decodeFanSpeed(reading: number): number | undefined {
 		let fanSpeed: number = Math.log2(reading + 1);

@@ -54,14 +54,16 @@ class ValloxSerial extends utils.Adapter {
                     let reading = data[3];
                     switch (data[2]) {
                         case 0x29:
-                            let objectId = "Readings.fanSpeed";
-                            let fanSpeedValue = this.decodeFanSpeed(data[3]);
+                            let mappings = this.getDatagramMappingsByRequestCode(data[5]);
+                            let mapping = mappings[0];
+                            let objectId = mapping.id;
+                            let value = mapping.encoding(data[3]);
                             try {
-                                let hasChangedState = yield this.setStateChangedAsync(objectId, { val: fanSpeedValue, ack: true });
-                                this.log.debug(`Object ${objectId} state changed: ${hasChangedState}`);
+                                let hasChangedState = yield this.setStateChangedAsync(objectId, { val: value, ack: true });
+                                this.log.info(`Object ${objectId} state changed: ${hasChangedState}`);
                             }
                             catch (err) {
-                                this.log.error(`Unable to change state of ${objectId}: ${err}`);
+                                this.log.info(`Unable to change state of ${objectId}: ${err}`);
                             }
                             break;
                         case 0xA3:
@@ -152,16 +154,36 @@ class ValloxSerial extends utils.Adapter {
     // ////////////////////////////////////////////////////////////////
     // Section with local helpers
     // ////////////////////////////////////////////////////////////////
+    /**
+     * Fills the member variablethis.datagramStateMap with a mapping from
+     * datagram request codes to object IDs. Therefore the instanceObjects
+     * configuration from io-package.json is read.
+     */
     buildDatagramStateMap() {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         for (let obj of this.ioPack.instanceObjects) {
             let codes = ((_b = (_a = obj === null || obj === void 0 ? void 0 : obj.common) === null || _a === void 0 ? void 0 : _a.custom) === null || _b === void 0 ? void 0 : _b.fieldCodes) || [];
+            let encodingFunction = this.decodeIdentity;
+            switch ((_d = (_c = obj === null || obj === void 0 ? void 0 : obj.common) === null || _c === void 0 ? void 0 : _c.custom) === null || _d === void 0 ? void 0 : _d.encoding) {
+                case "fanSpeed":
+                    encodingFunction = this.decodeFanSpeed;
+                    break;
+            }
             for (let code of codes) {
-                let bitPatternValue = (!!((_d = (_c = obj === null || obj === void 0 ? void 0 : obj.common) === null || _c === void 0 ? void 0 : _c.custom) === null || _d === void 0 ? void 0 : _d.fieldBitPattern)) ?
+                let bitPatternValue = (!!((_f = (_e = obj === null || obj === void 0 ? void 0 : obj.common) === null || _e === void 0 ? void 0 : _e.custom) === null || _f === void 0 ? void 0 : _f.fieldBitPattern)) ?
                     parseInt(obj.common.custom.fieldBitPattern) : undefined;
-                this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id });
+                this.datagramStateMap.push({ fieldCode: +code, fieldBitPattern: bitPatternValue, id: obj._id, encoding: encodingFunction });
             }
         }
+    }
+    getDatagramMappingsByRequestCode(fieldCode) {
+        let result = [];
+        for (let mapping of this.datagramStateMap) {
+            if (mapping.fieldCode == fieldCode) {
+                result.push(mapping);
+            }
+        }
+        return result;
     }
     // ////////////////////////////////////////////////////////////////
     // Section with datagram functions
@@ -197,6 +219,9 @@ class ValloxSerial extends utils.Adapter {
         return codeSenderMap[senderByte];
     }
     ;
+    decodeIdentity(val) {
+        return val;
+    }
     decodeFanSpeed(reading) {
         let fanSpeed = Math.log2(reading + 1);
         return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
