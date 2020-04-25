@@ -110,7 +110,7 @@ class ValloxSerial extends utils.Adapter {
 		stateList.map(s => { this.log.info(`XXXXXXXXXXXXXX State: `+JSON.stringify(s)); });
 
 let stateList2: Array<Record<string, ioBroker.State>> = [];
-		this.getStates(".*Readings\..*", undefined, (err, s) => {
+		this.getStates(`${this.namespace}.`, (err, s) => {
 			if (!!s) {
 				stateList2.push(s);
 			}
