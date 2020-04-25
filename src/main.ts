@@ -87,13 +87,18 @@ class ValloxSerial extends utils.Adapter {
 					this.log.info("Reading (code: "+this.toHexString(data[2], true)+", val: "+data[3]+") "+
 						"=> to Object "+objectId+". Encoded value: "+reading+".");
 											
-					try {
+					this.setStateChangedAsync(objectId, reading, true).then((value) => {
+						this.log.info(`Object ${objectId} state changed to value ${value}`);
+					}).catch((err) => {
+						this.log.warn(`Unable to change state of ${objectId}: ${err}`);
+					});
+					/* try {
 						let stateChange = await this.setStateChangedAsync(objectId, reading, true);
 						let stateChangeString = JSON.stringify(stateChange);
 						this.log.info(`Object ${objectId} state changed ${stateChangeString}`);
 					} catch (err) {
 						this.log.info(`Unable to change state of ${objectId}: ${err}`);
-					}
+					} */
 				}
 			} 
 		} else {
