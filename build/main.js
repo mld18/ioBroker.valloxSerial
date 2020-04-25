@@ -51,30 +51,21 @@ class ValloxSerial extends utils.Adapter {
                 this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
                 if (this.decodeSender(data[0]) == "MainUnit") {
                     // TODO: Temporary code for experimentation
-                    let reading = data[3];
-                    switch (data[2]) {
-                        case 0x29:
-                            let mappings = this.getDatagramMappingsByRequestCode(data[2]);
-                            let mapping = mappings[0];
-                            let objectId = mapping.id;
-                            let value = mapping.encoding(data[3]);
-                            try {
-                                let hasChangedState = yield this.setStateChangedAsync(objectId, { val: value, ack: true });
-                                this.log.info(`Object ${objectId} state changed: ${hasChangedState}`);
-                            }
-                            catch (err) {
-                                this.log.info(`Unable to change state of ${objectId}: ${err}`);
-                            }
-                            break;
-                        case 0xA3:
-                            let powerState = (reading & 0x01) != 0;
-                            let serviceReminder = (reading & 0x80) != 0;
-                            this.log.debug(`power: ${powerState}, serviceReminder: ${serviceReminder}`);
-                            yield this.setStateAsync("Readings.power", { val: powerState, ack: false });
-                            yield this.setStateAsync("Readings.serviceReminder", { val: serviceReminder, ack: false });
-                            break;
-                        default:
-                            break;
+                    let mappings = this.getDatagramMappingsByRequestCode(data[2]);
+                    for (let mapping of mappings) {
+                        let objectId = mapping.id;
+                        let reading = (!!mapping.fieldBitPattern) ?
+                            mapping.encoding(data[3], mapping.fieldBitPattern) :
+                            mapping.encoding(data[3]);
+                        this.log.info("Reading (code: " + this.toHexString(data[2], true) + ", val: " + data[3] + ") " +
+                            "=> to Object " + objectId + ". Encoded value: " + reading + ".");
+                        try {
+                            let hasChangedState = yield this.setStateChangedAsync(objectId, { val: reading, ack: true });
+                            this.log.info(`Object ${objectId} state changed: ${hasChangedState}`);
+                        }
+                        catch (err) {
+                            this.log.info(`Unable to change state of ${objectId}: ${err}`);
+                        }
                     }
                 }
             }
@@ -168,6 +159,15 @@ class ValloxSerial extends utils.Adapter {
                 case "fanSpeed":
                     encodingFunction = this.decodeFanSpeed;
                     break;
+                case "onOff":
+                    encodingFunction = this.decodeOnOff;
+                    break;
+                case "humidity":
+                    encodingFunction = this.decodeHumidity;
+                    break;
+                case "temperature":
+                    encodingFunction = this.decodeTemperature;
+                    break;
             }
             for (let code of codes) {
                 let bitPatternValue = (!!((_f = (_e = obj === null || obj === void 0 ? void 0 : obj.common) === null || _e === void 0 ? void 0 : _e.custom) === null || _f === void 0 ? void 0 : _f.fieldBitPattern)) ?
@@ -219,14 +219,48 @@ class ValloxSerial extends utils.Adapter {
         return codeSenderMap[senderByte];
     }
     ;
-    decodeIdentity(val) {
-        return val;
+    decodeIdentity(reading) {
+        return reading;
     }
     decodeFanSpeed(reading) {
         let fanSpeed = Math.log2(reading + 1);
         return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
     }
-    ;
+    decodeOnOff(reading, fieldBitPattern) {
+        return (reading & fieldBitPattern) != 0;
+    }
+    decodeHumidity(reading) {
+        return (reading - 51) / 2.04;
+    }
+    decodeTemperature(sensorValue) {
+        let temperatureMap = [-74, -70, -66, -62, -59, -56, -54, -52, -50, -48,
+            -47, -46, -44, -43, -42, -41, -40, -39, -38, -37,
+            -36, -35, -34, -33, -33, -32, -31, -30, -30, -29,
+            -28, -28, -27, -27, -26, -25, -25, -24, -24, -23,
+            -23, -22, -22, -21, -21, -20, -20, -19, -19, -19,
+            -18, -18, -17, -17, -16, -16, -16, -15, -15, -14,
+            -14, -14, -13, -13, -12, -12, -12, -11, -11, -11,
+            -10, -10, -9, -9, -9, -8, -8, -8, -7, -7,
+            -7, -6, -6, -6, -5, -5, -5, -4, -4, -4,
+            -3, -3, -3, -2, -2, -2, -1, -1, -1, -1,
+            0, 0, 0, 1, 1, 1, 2, 2, 2, 3,
+            3, 3, 4, 4, 4, 5, 5, 5, 5, 6,
+            6, 6, 7, 7, 7, 8, 8, 8, 9, 9,
+            9, 10, 10, 10, 11, 11, 11, 12, 12, 12,
+            13, 13, 13, 14, 14, 14, 15, 15, 15, 16,
+            16, 16, 17, 17, 18, 18, 18, 19, 19, 19,
+            20, 20, 21, 21, 21, 22, 22, 22, 23, 23,
+            24, 24, 24, 25, 25, 26, 26, 27, 27, 27,
+            28, 28, 29, 29, 30, 30, 31, 31, 32, 32,
+            33, 33, 34, 34, 35, 35, 36, 36, 37, 37,
+            38, 38, 39, 40, 40, 41, 41, 42, 43, 43,
+            44, 45, 45, 46, 47, 48, 48, 49, 50, 51,
+            52, 53, 53, 54, 55, 56, 57, 59, 60, 61,
+            62, 63, 65, 66, 68, 69, 71, 73, 75, 77,
+            79, 81, 82, 86, 90, 93, 97, 100, 100, 100,
+            100, 100, 100, 100, 100, 100];
+        return temperatureMap[sensorValue];
+    }
 }
 if (module.parent) {
     // Export the constructor in compact mode

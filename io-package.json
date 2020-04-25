@@ -83,7 +83,8 @@
 				"desc": "Power state (on/off)",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x01"
+					"fieldBitPattern": "0x01",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -100,7 +101,8 @@
 				"desc": "CO2 adjust state",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x02"
+					"fieldBitPattern": "0x02",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -117,7 +119,8 @@
 				"desc": "% relative humidity adjust state",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x04"
+					"fieldBitPattern": "0x04",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -134,7 +137,8 @@
 				"desc": "Heating state",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x08"
+					"fieldBitPattern": "0x08",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -151,7 +155,8 @@
 				"desc": "Filterguard indicator",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x10"
+					"fieldBitPattern": "0x10",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -168,7 +173,8 @@
 				"desc": "Heating indicator",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x20"
+					"fieldBitPattern": "0x20",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -185,7 +191,8 @@
 				"desc": "Error indicator",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x40"
+					"fieldBitPattern": "0x40",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -202,7 +209,8 @@
 				"desc": "Service reminder",
 				"custom": {
 					"fieldCodes": ["0xA3"],
-					"fieldBitPattern": "0x80"
+					"fieldBitPattern": "0x80",
+					"encoding": "onOff"
 				}				
             },
             "native": {}
@@ -238,7 +246,8 @@
 				"unit": "%",
 				"desc": "",
 				"custom": {
-					"fieldCodes": ["0x2A"]
+					"fieldCodes": ["0x2A"],
+					"encoding": "humidity"
 				}				
             },
             "native": {}
@@ -271,7 +280,8 @@
 				"unit": "%",
 				"desc": "Percentage of relative humidity from sensor 1",
 				"custom": {
-					"fieldCodes": ["0x2F"]
+					"fieldCodes": ["0x2F"],
+					"encoding": "humidity"
 				}				
             },
             "native": {}
@@ -288,7 +298,8 @@
 				"unit": "%",
 				"desc": "Percentage of relative humidity from sensor 2",
 				"custom": {
-					"fieldCodes": ["0x30"]
+					"fieldCodes": ["0x30"],
+					"encoding": "humidity"
 				}				
             },
             "native": {}
@@ -305,7 +316,8 @@
 				"unit": "°C",
 				"desc": "Measured temperature from outside air duct",
 				"custom": {
-					"fieldCodes": ["0x32"]
+					"fieldCodes": ["0x32"],
+					"encoding": "temperature"
 				}				
             },
             "native": {}
@@ -322,7 +334,8 @@
 				"unit": "°C",
 				"desc": "Measured temperature from exhaust air duct",
 				"custom": {
-					"fieldCodes": ["0x33"]
+					"fieldCodes": ["0x33"],
+					"encoding": "temperature"
 				}				
             },
             "native": {}
@@ -339,7 +352,8 @@
 				"unit": "°C",
 				"desc": "Measured temperature from inside air duct",
 				"custom": {
-					"fieldCodes": ["0x34"]
+					"fieldCodes": ["0x34"],
+					"encoding": "temperature"
 				}				
             },
             "native": {}
@@ -356,7 +370,8 @@
 				"unit": "°C",
 				"desc": "Measured temperature from incoming air duct",
 				"custom": {
-					"fieldCodes": ["0x35"]
+					"fieldCodes": ["0x35"],
+					"encoding": "temperature"
 				}				
             },
             "native": {}
