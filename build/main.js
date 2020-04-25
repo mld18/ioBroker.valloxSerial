@@ -70,13 +70,19 @@ class ValloxSerial extends utils.Adapter {
             let readingsChannel = `${this.name}.${this.instance}.Readings`;
             let stateList = [];
             //await this.getStatesOfAsync(null, readingsChannel);
-            this.getStatesOf("", "valloxserial.0.Readings", (err, s) => {
+            this.getStatesOf("", "Readings", (err, s) => {
                 if (!!s) {
                     stateList.push(s);
                 }
             });
             stateList.map(s => { this.log.info(`XXXXXXXXXXXXXX State: ` + JSON.stringify(s)); });
-            this.getStatesOf("valloxserial.0.Readings", (err, s) => {
+            this.getStatesOf("Readings", (err, s) => {
+                if (!!s) {
+                    stateList.push(s);
+                }
+            });
+            stateList.map(s => { this.log.info(`BBBBBBBBBBBB State: ` + JSON.stringify(s)); });
+            this.getStatesOf((err, s) => {
                 if (!!s) {
                     stateList.push(s);
                 }
