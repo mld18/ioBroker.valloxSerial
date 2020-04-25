@@ -48,6 +48,8 @@ class ValloxSerial extends utils.Adapter {
 		this.on("objectChange", this.onObjectChange.bind(this));
 		this.on("stateChange", this.onStateChange.bind(this));
 		this.on("unload", this.onUnload.bind(this));
+
+		this.buildDatagramStateMap();
 	}
 
 	/**
@@ -66,44 +68,6 @@ class ValloxSerial extends utils.Adapter {
 		this.serialPort.on('pause', () => {
 			this.log.info('Serial port paused');
 		});
-	}
-
-	private async onDataReady(data : number[]): Promise<void> {
-		this.log.debug("onDataReady() called.");
-		let datagramString: string = this.toHexStringDatagram(data);
-
-		// check length and checksum
-		if (data.length == 5 && this.hasRightChecksum(data)) {
-			this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
-			if (this.decodeSender(data[0]) == "MainUnit") {
-
-				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
-				for (let mapping of mappings) {
-					let objectId = mapping.id;
-					let reading = (!!mapping.fieldBitPattern) ?
-						mapping.encoding(data[3], mapping.fieldBitPattern) :
-						mapping.encoding(data[3]);
-					
-					this.log.info("Reading (code: "+this.toHexString(data[2], true)+", val: "+data[3]+") "+
-						"=> to Object "+objectId+". Encoded value: "+reading+".");
-											
-					this.setStateChangedAsync(objectId, reading, true).then((value) => {
-						this.log.info(`Object ${objectId} state changed to value ${value}`);
-					}).catch((err) => {
-						this.log.warn(`Unable to change state of ${objectId}: ${err}`);
-					});
-					/* try {
-						let stateChange = await this.setStateChangedAsync(objectId, reading, true);
-						let stateChangeString = JSON.stringify(stateChange);
-						this.log.info(`Object ${objectId} state changed ${stateChangeString}`);
-					} catch (err) {
-						this.log.info(`Unable to change state of ${objectId}: ${err}`);
-					} */
-				}
-			} 
-		} else {
-			this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
-		}
 	}
 
 	/**
@@ -130,7 +94,13 @@ class ValloxSerial extends utils.Adapter {
 		));
 		this.datagramSource.on("data", this.onDataReady.bind(this));
 
-		this.buildDatagramStateMap();
+		// TODO: Remove this later - just for debugging purposes
+		let channelList = await this.getChannelsOfAsync();
+		channelList.map(c => { this.log.info(`Channel: `+JSON.stringify(c)); });
+		
+		let stateList = await this.getStatesOfAsync("", "Readings");
+		stateList.map(s => { this.log.info(`State: `+JSON.stringify(s)); });
+
 
 		// TODO: Build object structure for commands (see history for code examples)
 	}
@@ -151,6 +121,41 @@ class ValloxSerial extends utils.Adapter {
 			callback();
 		}
 	}
+
+	private async onDataReady(data : number[]): Promise<void> {
+		this.log.debug("onDataReady() called.");
+		let datagramString: string = this.toHexStringDatagram(data);
+
+		// check length and checksum
+		if (data.length == 5 && this.hasRightChecksum(data)) {
+			this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
+			if (this.decodeSender(data[0]) == "MainUnit") {
+
+				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
+				for (let mapping of mappings) {
+					let objectId = mapping.id;
+					let reading = (!!mapping.fieldBitPattern) ?
+						mapping.encoding(data[3], mapping.fieldBitPattern) :
+						mapping.encoding(data[3]);
+					
+					this.log.info("Reading (code: "+this.toHexString(data[2], true)+", val: "+data[3]+") "+
+						"=> to Object "+objectId+". Encoded value: "+reading+".");
+											
+					try {
+						let stateChange = await this.setStateChangedAsync(objectId, reading, true);
+						let stateChangeString = JSON.stringify(stateChange);
+						this.log.info(`Object ${objectId} state changed to ${stateChangeString}`);
+					} catch (err) {
+						this.log.info(`Unable to change state of ${objectId}: ${err}`);
+					}
+				}
+			} 
+		} else {
+			this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
+		}
+	}
+
+	
 
 	/**
 	 * Is called if a subscribed object changes
@@ -280,7 +285,8 @@ class ValloxSerial extends utils.Adapter {
 	}
 
 	private decodeHumidity(reading:number): number | undefined {
-		return (reading-51) / 2.04;
+		let result = (reading-51) / 2.04;
+		return ((result>=0) && (result<=100)) ? result : undefined;
 	}
 
 	private decodeTemperature(sensorValue: number) {

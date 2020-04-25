@@ -24,6 +24,7 @@ class ValloxSerial extends utils.Adapter {
         this.on("objectChange", this.onObjectChange.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
         this.on("unload", this.onUnload.bind(this));
+        this.buildDatagramStateMap();
     }
     /**
      * Monitor all stuff that happens with the serial port.
@@ -40,42 +41,6 @@ class ValloxSerial extends utils.Adapter {
         });
         this.serialPort.on('pause', () => {
             this.log.info('Serial port paused');
-        });
-    }
-    onDataReady(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.log.debug("onDataReady() called.");
-            let datagramString = this.toHexStringDatagram(data);
-            // check length and checksum
-            if (data.length == 5 && this.hasRightChecksum(data)) {
-                this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
-                if (this.decodeSender(data[0]) == "MainUnit") {
-                    let mappings = this.getDatagramMappingsByRequestCode(data[2]);
-                    for (let mapping of mappings) {
-                        let objectId = mapping.id;
-                        let reading = (!!mapping.fieldBitPattern) ?
-                            mapping.encoding(data[3], mapping.fieldBitPattern) :
-                            mapping.encoding(data[3]);
-                        this.log.info("Reading (code: " + this.toHexString(data[2], true) + ", val: " + data[3] + ") " +
-                            "=> to Object " + objectId + ". Encoded value: " + reading + ".");
-                        this.setStateChangedAsync(objectId, reading, true).then((value) => {
-                            this.log.info(`Object ${objectId} state changed to value ${value}`);
-                        }).catch((err) => {
-                            this.log.warn(`Unable to change state of ${objectId}: ${err}`);
-                        });
-                        /* try {
-                            let stateChange = await this.setStateChangedAsync(objectId, reading, true);
-                            let stateChangeString = JSON.stringify(stateChange);
-                            this.log.info(`Object ${objectId} state changed ${stateChangeString}`);
-                        } catch (err) {
-                            this.log.info(`Unable to change state of ${objectId}: ${err}`);
-                        } */
-                    }
-                }
-            }
-            else {
-                this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
-            }
         });
     }
     /**
@@ -99,7 +64,11 @@ class ValloxSerial extends utils.Adapter {
                Delimiter parser for separating datagrams */
             { delimiter: [0x1] }));
             this.datagramSource.on("data", this.onDataReady.bind(this));
-            this.buildDatagramStateMap();
+            // TODO: Remove this later - just for debugging purposes
+            let channelList = yield this.getChannelsOfAsync();
+            channelList.map(c => { this.log.info(`Channel: ` + JSON.stringify(c)); });
+            let stateList = yield this.getStatesOfAsync("", "Readings");
+            stateList.map(s => { this.log.info(`State: ` + JSON.stringify(s)); });
             // TODO: Build object structure for commands (see history for code examples)
         });
     }
@@ -117,6 +86,38 @@ class ValloxSerial extends utils.Adapter {
         catch (e) {
             callback();
         }
+    }
+    onDataReady(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.log.debug("onDataReady() called.");
+            let datagramString = this.toHexStringDatagram(data);
+            // check length and checksum
+            if (data.length == 5 && this.hasRightChecksum(data)) {
+                this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
+                if (this.decodeSender(data[0]) == "MainUnit") {
+                    let mappings = this.getDatagramMappingsByRequestCode(data[2]);
+                    for (let mapping of mappings) {
+                        let objectId = mapping.id;
+                        let reading = (!!mapping.fieldBitPattern) ?
+                            mapping.encoding(data[3], mapping.fieldBitPattern) :
+                            mapping.encoding(data[3]);
+                        this.log.info("Reading (code: " + this.toHexString(data[2], true) + ", val: " + data[3] + ") " +
+                            "=> to Object " + objectId + ". Encoded value: " + reading + ".");
+                        try {
+                            let stateChange = yield this.setStateChangedAsync(objectId, reading, true);
+                            let stateChangeString = JSON.stringify(stateChange);
+                            this.log.info(`Object ${objectId} state changed to ${stateChangeString}`);
+                        }
+                        catch (err) {
+                            this.log.info(`Unable to change state of ${objectId}: ${err}`);
+                        }
+                    }
+                }
+            }
+            else {
+                this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
+            }
+        });
     }
     /**
      * Is called if a subscribed object changes
@@ -234,7 +235,8 @@ class ValloxSerial extends utils.Adapter {
         return (reading & fieldBitPattern) != 0;
     }
     decodeHumidity(reading) {
-        return (reading - 51) / 2.04;
+        let result = (reading - 51) / 2.04;
+        return ((result >= 0) && (result <= 100)) ? result : undefined;
     }
     decodeTemperature(sensorValue) {
         let temperatureMap = [-74, -70, -66, -62, -59, -56, -54, -52, -50, -48,
