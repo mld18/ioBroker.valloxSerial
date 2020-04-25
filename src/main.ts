@@ -98,7 +98,8 @@ class ValloxSerial extends utils.Adapter {
 		let channelList = await this.getChannelsOfAsync();
 		channelList.map(c => { this.log.info(`Channel: `+JSON.stringify(c)); });
 		
-		let stateList = await this.getStatesOfAsync("", "Readings");
+		let readingsChannel = `${this.name}.${this.instance}.Readings`;
+		let stateList = await this.getStatesOfAsync(readingsChannel);
 		stateList.map(s => { this.log.info(`State: `+JSON.stringify(s)); });
 
 
