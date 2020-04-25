@@ -76,7 +76,7 @@ class ValloxSerial extends utils.Adapter {
 		if (data.length == 5 && this.hasRightChecksum(data)) {
 			this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
 			if (this.decodeSender(data[0]) == "MainUnit") {
-				// TODO: Temporary code for experimentation
+
 				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
 				for (let mapping of mappings) {
 					let objectId = mapping.id;
@@ -88,8 +88,9 @@ class ValloxSerial extends utils.Adapter {
 						"=> to Object "+objectId+". Encoded value: "+reading+".");
 											
 					try {
-						let hasChangedState = await this.setStateChangedAsync(objectId, {val: reading, ack: true});
-						this.log.info(`Object ${objectId} state changed: ${hasChangedState}`);
+						let stateChange = await this.setStateChangedAsync(objectId, reading, true);
+						let stateChangeString = JSON.stringify(stateChange);
+						this.log.info(`Object ${objectId} state changed ${stateChangeString}`);
 					} catch (err) {
 						this.log.info(`Unable to change state of ${objectId}: ${err}`);
 					}
