@@ -54,7 +54,7 @@ class ValloxSerial extends utils.Adapter {
                     let reading = data[3];
                     switch (data[2]) {
                         case 0x29:
-                            let mappings = this.getDatagramMappingsByRequestCode(data[5]);
+                            let mappings = this.getDatagramMappingsByRequestCode(data[2]);
                             let mapping = mappings[0];
                             let objectId = mapping.id;
                             let value = mapping.encoding(data[3]);
