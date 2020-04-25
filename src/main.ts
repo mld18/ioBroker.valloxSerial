@@ -99,10 +99,10 @@ class ValloxSerial extends utils.Adapter {
 		channelList.map(c => { this.log.info(`Channel: `+JSON.stringify(c)); }); */
 		//valloxserial.0.Readings
 		
-		let parentDevice = `${this.name}.${this.instance}.`;
+		//let parentDevice = `${this.name}.${this.instance}.`;
 		let stateList:Array<ioBroker.StateObject[]> = [];
 		//await this.getStatesOfAsync(null, readingsChannel);
-		this.getStatesOf(parentDevice, "Readings", (err, s) => {
+		this.getStatesOf(this.namespace, "Readings", (err, s) => {
 			if (!!s) {
 				stateList.push(s);
 			}
