@@ -102,12 +102,20 @@ class ValloxSerial extends utils.Adapter {
 		//let parentDevice = `${this.name}.${this.instance}.`;
 		let stateList:Array<ioBroker.StateObject[]> = [];
 		//await this.getStatesOfAsync(null, readingsChannel);
-		this.getStatesOf(this.namespace, "Readings", (err, s) => {
+		this.getStatesOf("", "Readings", (err, s) => {
 			if (!!s) {
 				stateList.push(s);
 			}
 		});
 		stateList.map(s => { this.log.info(`XXXXXXXXXXXXXX State: `+JSON.stringify(s)); });
+
+let stateList2: Array<Record<string, ioBroker.State>> = [];
+		this.getStates(".*Readings\..*", undefined, (err, s) => {
+			if (!!s) {
+				stateList2.push(s);
+			}
+		});
+		stateList2.map(s => { this.log.info(`AAAAAAAAAAA State: `+JSON.stringify(s)); });
 
 		this.datagramSource.on("data", this.onDataReady.bind(this));
 		// TODO: Build object structure for commands (see history for code examples)
