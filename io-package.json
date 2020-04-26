@@ -77,7 +77,7 @@
             "common": {
                 "name": "Power",
                 "type": "boolean",
-                "role": "readings.power",
+                "role": "switch.power",
                 "read": true,
 				"write": false,
 				"desc": "Power state (on/off)",
@@ -95,7 +95,7 @@
             "common": {
                 "name": "CO2 adjust",
                 "type": "boolean",
-                "role": "readings.co2adjust",
+                "role": "info.display",
                 "read": true,
 				"write": false,
 				"desc": "CO2 adjust state",
@@ -113,7 +113,7 @@
             "common": {
                 "name": "Humidity adjust",
                 "type": "boolean",
-                "role": "readings.humidityadjust",
+                "role": "info.display",
                 "read": true,
 				"write": false,
 				"desc": "% relative humidity adjust state",
@@ -131,7 +131,7 @@
             "common": {
                 "name": "Heating",
                 "type": "boolean",
-                "role": "readings.heating",
+                "role": "info.display",
                 "read": true,
 				"write": false,
 				"desc": "Heating state",
@@ -149,7 +149,7 @@
             "common": {
                 "name": "Filterguard",
                 "type": "boolean",
-                "role": "readings.filterguard",
+                "role": "info.display",
                 "read": true,
 				"write": false,
 				"desc": "Filterguard indicator",
@@ -167,7 +167,7 @@
             "common": {
                 "name": "Heating indicator",
                 "type": "boolean",
-                "role": "readings.heatingindicator",
+                "role": "info.display",
                 "read": true,
 				"write": false,
 				"desc": "Heating indicator",
@@ -185,7 +185,7 @@
             "common": {
                 "name": "Error",
                 "type": "boolean",
-                "role": "readings.error",
+                "role": "indicator.maintenance.alarm",
                 "read": true,
 				"write": false,
 				"desc": "Error indicator",
@@ -203,7 +203,7 @@
             "common": {
                 "name": "Service reminder",
                 "type": "boolean",
-                "role": "readings.servicereminder",
+                "role": "indicator.maintenance",
                 "read": true,
 				"write": false,
 				"desc": "Service reminder",
@@ -221,7 +221,7 @@
             "common": {
                 "name": "Fan speed",
                 "type": "number",
-                "role": "readings.fanspeed",
+                "role": "level",
                 "read": true,
 				"write": false,
 				"min": 0,
@@ -240,7 +240,7 @@
             "common": {
                 "name": "Current relative humidity",
                 "type": "number",
-                "role": "readings.humidity",
+                "role": "value.humidity",
                 "read": true,
 				"write": false,
 				"unit": "%",
@@ -258,9 +258,10 @@
             "common": {
                 "name": "Current level of CO2",
                 "type": "number",
-                "role": "readings.co2level",
+                "role": "level.co2",
                 "read": true,
 				"write": false,
+				"unit": "%",
 				"desc": "Last measured amount of CO2",
 				"custom": {
 					"fieldCodes": ["0x2B", "0x2C"]
@@ -274,7 +275,7 @@
             "common": {
                 "name": "%RH from sensor 1",
                 "type": "number",
-                "role": "readings.humiditysensor1",
+                "role": "value.humidity",
                 "read": true,
 				"write": false,
 				"unit": "%",
@@ -292,7 +293,7 @@
             "common": {
                 "name": "%RH from sensor 2",
                 "type": "number",
-                "role": "readings.humiditysensor2",
+                "role": "value.humidity",
                 "read": true,
 				"write": false,
 				"unit": "%",
@@ -310,7 +311,7 @@
             "common": {
                 "name": "Outside temperature",
                 "type": "number",
-                "role": "readings.outsidetemperature",
+                "role": "value.temperature",
                 "read": true,
 				"write": false,
 				"unit": "°C",
@@ -328,7 +329,7 @@
             "common": {
                 "name": "Exhaust temperature",
                 "type": "number",
-                "role": "readings.exhausttemperature",
+                "role": "value.temperature",
                 "read": true,
 				"write": false,
 				"unit": "°C",
@@ -346,7 +347,7 @@
             "common": {
                 "name": "Inside temperature",
                 "type": "number",
-                "role": "readings.insidetemperature",
+                "role": "value.temperature",
                 "read": true,
 				"write": false,
 				"unit": "°C",
@@ -364,7 +365,7 @@
             "common": {
                 "name": "Incoming temperature",
                 "type": "number",
-                "role": "readings.incomingtemperature",
+                "role": "value.temperature",
                 "read": true,
 				"write": false,
 				"unit": "°C",

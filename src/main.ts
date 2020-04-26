@@ -9,10 +9,6 @@ declare global {
 			// Define the shape of your options here (recommended)
 			serialPortDevice: string;
 			debugLogDatagrams: boolean;
-
-			// TODO: Remove later...
-			// Or use a catch-all approach
-		    // [key: string]: any;
 		}
 	}
 }

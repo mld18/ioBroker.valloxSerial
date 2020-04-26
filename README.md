@@ -119,6 +119,7 @@ The module folder contains a shell script `start-remote-debugging.sh` that start
 * We currently just take all readings that are send via broadcast or to one of the panels. We might behave cleaner by
   * Let the adapter mimic a panel (with on panel address 1-9)
   * Allow for sequential polling of state, fan speed, etc. (dedicated polling frequencies)
+* Currently we don't handle field code 0xA4 (Heating setpoint). Need to validate if that's just a response to a panel's request.
 
 ## Changelog
  
