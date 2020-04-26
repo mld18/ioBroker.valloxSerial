@@ -93,32 +93,7 @@ class ValloxSerial extends utils.Adapter {
 			{ delimiter: [0x1] }
 		));
 
-
-		// TODO: Remove this later - just for debugging purposes
-/* 		let channelList = await this.getChannelsOfAsync();
-		channelList.map(c => { this.log.info(`Channel: `+JSON.stringify(c)); }); */
-		//valloxserial.0.Readings
-		
-		//let parentDevice = `${this.name}.${this.instance}.`;
-		let stateList:Array<ioBroker.StateObject[]> = [];
-		//await this.getStatesOfAsync(null, readingsChannel);
-		this.getStatesOf("", "Readings", (err, s) => {
-			if (!!s) {
-				stateList.push(s);
-			}
-		});
-		stateList.map(s => { this.log.info(`XXXXXXXXXXXXXX State: `+JSON.stringify(s)); });
-
-let stateList2: Array<Record<string, ioBroker.State>> = [];
-		this.getStates(`${this.namespace}.`, (err, s) => {
-			if (!!s) {
-				stateList2.push(s);
-			}
-		});
-		stateList2.map(s => { this.log.info(`AAAAAAAAAAA State: `+JSON.stringify(s)); });
-
 		this.datagramSource.on("data", this.onDataReady.bind(this));
-		// TODO: Build object structure for commands (see history for code examples)
 	}
 
 	/**
@@ -144,7 +119,6 @@ let stateList2: Array<Record<string, ioBroker.State>> = [];
 
 		// check length and checksum
 		if (data.length == 5 && this.hasRightChecksum(data)) {
-			this.log.debug(`Checksum of datagram ${datagramString} is correct.`);
 			if (this.decodeSender(data[0]) == "MainUnit") {
 
 				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
@@ -165,9 +139,13 @@ let stateList2: Array<Record<string, ioBroker.State>> = [];
 						this.log.info(`Unable to change state of ${objectId}: ${err}`);
 					}
 				}
+
+				if (mappings.length == 0) {
+					this.log.warn("No mapping found for code "+this.toHexString(data[2], true)+`. Datagram was ${datagramString}`);
+				}
 			} 
 		} else {
-			this.log.debug(`Checksum of datagram ${datagramString} is not correct.`);
+			this.log.warn(`Checksum of datagram ${datagramString} is not correct.`);
 		}
 	}
 
