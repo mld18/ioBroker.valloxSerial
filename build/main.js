@@ -64,6 +64,8 @@ class ValloxSerial extends utils.Adapter {
                Delimiter parser for separating datagrams */
             { delimiter: [0x1] }));
             this.datagramSource.on("data", this.onDataReady.bind(this));
+            // Subscribe to all writable states
+            this.subscribeStatesAsync(`${this.namespace}.Commands.*`);
         });
     }
     /**

@@ -93,6 +93,9 @@ class ValloxSerial extends utils.Adapter {
 		));
 
 		this.datagramSource.on("data", this.onDataReady.bind(this));
+
+		// Subscribe to all writable states
+		this.subscribeStatesAsync(`${this.namespace}.Commands.*`);
 	}
 
 	/**
