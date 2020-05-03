@@ -57,7 +57,10 @@
 	},
 	"native": {
 		"serialPortDevice": "/dev/ttyUSB0",
-		"debugLogDatagrams": false
+		"loglevelDatagrams": "Debug",
+		"logSerialPortEvents": false,
+		"logEventHandlers": false,
+		"logAllReadingsForStateChange": false
 	},
 	"objects": [],
 	"instanceObjects": [

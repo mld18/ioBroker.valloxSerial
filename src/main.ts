@@ -8,13 +8,16 @@ declare global {
 		interface AdapterConfig {
 			// Define the shape of your options here (recommended)
 			serialPortDevice: string;
-			debugLogDatagrams: boolean;
+			loglevelDatagrams: "Off" | "Silly" | "Debug" | "Info";
+			logSerialPortEvents: boolean;
+			logEventHandlers: boolean;
+			logAllReadingsForStateChange: boolean;
 		}
 	}
 }
 
 type DatagramSender = "MainUnit" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
-type DatagramReceiver = "All" | "MainUnit" | "All Panels" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
+//type DatagramReceiver = "All" | "MainUnit" | "All Panels" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
 
 type DatagramMapping = {
 	"fieldCode": number;
@@ -56,13 +59,13 @@ class ValloxSerial extends utils.Adapter {
 			this.log.error(`PROBLEM WITH SERIAL PORT: ${err.message}`);
 		});
 		this.serialPort.on('open', () => {
-			this.log.info('Serial port opened');
+			this.logSerialPortEvent("Serial port opened");
 		});
 		this.serialPort.on('close', () => {
-			this.log.info('Serial port closed');
+			this.logSerialPortEvent("Serial port closed");
 		});
 		this.serialPort.on('pause', () => {
-			this.log.info('Serial port paused');
+			this.logSerialPortEvent("Serial port paused");
 		});
 	}
 
@@ -70,9 +73,9 @@ class ValloxSerial extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	private async onReady(): Promise<void> {
-		this.log.debug("onReady() called.");
+		this.logEventHandlers("onReady() called.");
 
-		this.log.info(`Opening serial port ${this.config.serialPortDevice} at 9600 bit/s, 8 databits, no parity, 1 stop bit.`)
+		this.logSerialPortEvent(`Opening serial port ${this.config.serialPortDevice} at 9600 bit/s, 8 databits, no parity, 1 stop bit.`);
 		this.serialPort = new SerialPort(this.config.serialPortDevice, {
 			autoOpen: true,
 			baudRate: 9600,
@@ -97,9 +100,9 @@ class ValloxSerial extends utils.Adapter {
 	 */
 	private onUnload(callback: () => void): void {
 		try {
-			this.log.debug("onUnload() called.");
+			this.logEventHandlers("onUnload() called.");
 
-			this.serialPort.pause;
+			this.serialPort.pause();
 			this.serialPort.close();
 
 			this.log.info("cleaned everything up...");
@@ -110,11 +113,14 @@ class ValloxSerial extends utils.Adapter {
 	}
 
 	private async onDataReady(data : number[]): Promise<void> {
-		this.log.debug("onDataReady() called.");
+		this.logEventHandlers(`onDataReady([${data}]) called.`);
+
 		let datagramString: string = this.toHexStringDatagram(data);
+		this.logDatagram(datagramString);
 
 		// check length and checksum
 		if (data.length == 5 && this.hasRightChecksum(data)) {
+			// only look at datagrams that are sent by the main unit
 			if (this.decodeSender(data[0]) == "MainUnit") {
 
 				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
@@ -124,13 +130,16 @@ class ValloxSerial extends utils.Adapter {
 						mapping.encoding(data[3], mapping.fieldBitPattern) :
 						mapping.encoding(data[3]);
 					
-					this.log.info("Reading (code: "+this.toHexString(data[2], true)+", val: "+data[3]+") "+
-						"=> to Object "+objectId+". Encoded value: "+reading+".");
+					if (this.config.logAllReadingsForStateChange) {
+						this.log.info(`Reading (code: ${this.toHexString(data[2], true)}, val: ${data[3]}) => to Object ${objectId}. Encoded value: ${reading}.`);
+					}
 											
 					try {
 						let stateChange = await this.setStateChangedAsync(objectId, reading, true);
 						let stateChangeString = JSON.stringify(stateChange);
-						this.log.info(`Object ${objectId} state changed to ${stateChangeString}`);
+						if (this.config.logAllReadingsForStateChange) {
+							this.log.info(`Object ${objectId} state changed to ${stateChangeString}`);
+						}
 					} catch (err) {
 						this.log.info(`Unable to change state of ${objectId}: ${err}`);
 					}
@@ -151,7 +160,8 @@ class ValloxSerial extends utils.Adapter {
 	 * Is called if a subscribed object changes
 	 */
 	private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-		this.log.debug("onObjectChange() called.");
+		this.logEventHandlers(`onObjectChange(id: ${id}, obj: ${JSON.stringify(obj)}) called.`);
+		
 		if (obj) {
 			// The object was changed
 			this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
@@ -165,7 +175,8 @@ class ValloxSerial extends utils.Adapter {
 	 * Is called if a subscribed state changes
 	 */
 	private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-		this.log.debug("onStateChange() called.");
+		this.logEventHandlers(`onStateChange(id: ${id}, state: ${JSON.stringify(state)}) called.`);
+		
 		if (state) {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -186,24 +197,17 @@ class ValloxSerial extends utils.Adapter {
 	 */
 	private buildDatagramStateMap(): void {
 		for (let obj of this.ioPack.instanceObjects) {
-			let codes = obj?.common?.custom?.fieldCodes || [];
 			
-			let encodingFunction: Function = this.decodeIdentity;
-			switch(obj?.common?.custom?.encoding) {
-				case "fanSpeed":
-					encodingFunction=this.decodeFanSpeed;
-					break;
-				case "onOff":
-					encodingFunction=this.decodeOnOff;
-					break;
-				case "humidity":
-					encodingFunction=this.decodeHumidity;
-					break;
-				case "temperature":
-					encodingFunction=this.decodeTemperature;
-					break;
-			}
+			let enc = obj?.common?.custom?.encoding;
+			//let encodingFunction: Function = this.decodeIdentity;
+			let encodingFunction =
+				(enc == "fanSpeed") ? this.decodeFanSpeed :
+				(enc == "onOff") ? this.decodeOnOff :
+				(enc == "humidity") ? this.decodeHumidity :
+				(enc == "temperature") ? this.decodeTemperature :
+				this.decodeIdentity
 
+			let codes = obj?.common?.custom?.fieldCodes || [];
 			for (let code of codes) {
 				let bitPatternValue: number | undefined = (!!obj?.common?.custom?.fieldBitPattern) ?
 					parseInt(obj.common.custom.fieldBitPattern) : undefined;
@@ -309,7 +313,41 @@ class ValloxSerial extends utils.Adapter {
 			100,100,100,100,100,100];
 		return temperatureMap[sensorValue]; 
 	}
+
+	// ////////////////////////////////////////////////////////////////
+	// Section with debug logging functions
+	// ////////////////////////////////////////////////////////////////
+	private logDatagram(datagramString : string) : void {
+		let ll = this.config.loglevelDatagrams;
+		let logFunc = (ll == "Silly") ?
+			this.log.silly : (ll = "Debug") ?
+				this.log.debug : (ll == "Info") ?
+					this.log.info :
+					undefined;
+
+		if (!!logFunc) {
+			logFunc(`Received datagram: ${datagramString}`);
+		}
+	}
+
+	private logSerialPortEvent(msg : string) :void {
+		if (this.config.logSerialPortEvents) {
+			this.log.info(msg);
+		}
+	}
+
+	private logEventHandlers(msg : string) : void {
+		if (this.config.logEventHandlers) {
+			this.log.info(msg);
+		}
+	}
+
+
 }
+
+
+
+
 
 if (module.parent) {
 	// Export the constructor in compact mode
