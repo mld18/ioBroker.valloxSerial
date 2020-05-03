@@ -113,9 +113,8 @@ class ValloxSerial extends utils.Adapter {
 	}
 
 	private async onDataReady(data : number[]): Promise<void> {
-		this.logEventHandlers(`onDataReady([${data}]) called.`);
-
 		let datagramString: string = this.toHexStringDatagram(data);
+		this.logEventHandlers(`onDataReady([${datagramString}]) called.`);
 		this.logDatagram(datagramString);
 
 		// check length and checksum

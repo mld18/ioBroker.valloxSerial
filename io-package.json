@@ -65,14 +65,22 @@
 	"objects": [],
 	"instanceObjects": [
 		{
+            "_id": "Commands",
+            "type": "channel",
+            "common": {
+                "role": "button",
+				"name": "",
+				"desc": "Contains all commands to submit settings to the ventilation unit"
+            }
+		},
+		{
             "_id": "Readings",
             "type": "channel",
             "common": {
                 "role": "Readings",
 				"name": "",
 				"desc": "Contains all values send to operator panels as read-only states"
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.power",
@@ -89,8 +97,7 @@
 					"fieldBitPattern": "0x01",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.co2Adjust",
@@ -107,8 +114,7 @@
 					"fieldBitPattern": "0x02",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.humidityAdjust",
@@ -125,8 +131,7 @@
 					"fieldBitPattern": "0x04",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.heating",
@@ -143,8 +148,7 @@
 					"fieldBitPattern": "0x08",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.filterguard",
@@ -161,8 +165,7 @@
 					"fieldBitPattern": "0x10",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.heatingIndicator",
@@ -179,8 +182,7 @@
 					"fieldBitPattern": "0x20",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.error",
@@ -197,8 +199,7 @@
 					"fieldBitPattern": "0x40",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.serviceReminder",
@@ -215,8 +216,7 @@
 					"fieldBitPattern": "0x80",
 					"encoding": "onOff"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.fanSpeed",
@@ -234,8 +234,7 @@
 					"fieldCodes": ["0x29"],
 					"encoding": "fanSpeed"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.humidity",
@@ -252,8 +251,7 @@
 					"fieldCodes": ["0x2A"],
 					"encoding": "humidity"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.co2Level",
@@ -269,8 +267,7 @@
 				"custom": {
 					"fieldCodes": ["0x2B", "0x2C"]
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.humiditySensor1",
@@ -287,8 +284,7 @@
 					"fieldCodes": ["0x2F"],
 					"encoding": "humidity"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.humiditySensor2",
@@ -305,8 +301,7 @@
 					"fieldCodes": ["0x30"],
 					"encoding": "humidity"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.outsideTemperature",
@@ -323,8 +318,7 @@
 					"fieldCodes": ["0x32"],
 					"encoding": "temperature"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.exhaustTemperature",
@@ -341,8 +335,7 @@
 					"fieldCodes": ["0x33"],
 					"encoding": "temperature"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.insideTemperature",
@@ -359,8 +352,7 @@
 					"fieldCodes": ["0x34"],
 					"encoding": "temperature"
 				}				
-            },
-            "native": {}
+            }
 		},
 		{
             "_id": "Readings.incomingTemperature",
@@ -377,8 +369,25 @@
 					"fieldCodes": ["0x35"],
 					"encoding": "temperature"
 				}				
-            },
-            "native": {}
+			}
+		},
+		{
+            "_id": "Commands.setFanSpeed",
+            "type": "state",
+            "common": {
+                "name": "Set fan speed",
+                "type": "number",
+                "role": "level",
+                "read": false,
+				"write": true,
+				"min": 0,
+				"max": 8,
+				"desc": "Fan speed is discretely indicated by a level between 1 and 8",
+				"custom": {
+					"fieldCodes": ["0x29"],
+					"encoding": "fanSpeed"
+				}				
+            }
 		}
 	]
 }

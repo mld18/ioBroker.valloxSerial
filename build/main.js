@@ -83,8 +83,8 @@ class ValloxSerial extends utils.Adapter {
     }
     onDataReady(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logEventHandlers(`onDataReady([${data}]) called.`);
             let datagramString = this.toHexStringDatagram(data);
+            this.logEventHandlers(`onDataReady([${datagramString}]) called.`);
             this.logDatagram(datagramString);
             // check length and checksum
             if (data.length == 5 && this.hasRightChecksum(data)) {
@@ -96,7 +96,6 @@ class ValloxSerial extends utils.Adapter {
                         let reading = (!!mapping.fieldBitPattern) ?
                             mapping.encoding(data[3], mapping.fieldBitPattern) :
                             mapping.encoding(data[3]);
-                        // TODO: Make this logging configurable
                         if (this.config.logAllReadingsForStateChange) {
                             this.log.info(`Reading (code: ${this.toHexString(data[2], true)}, val: ${data[3]}) => to Object ${objectId}. Encoded value: ${reading}.`);
                         }
