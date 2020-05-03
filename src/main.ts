@@ -182,6 +182,30 @@ class ValloxSerial extends utils.Adapter {
 		if (state) {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+
+			// TODO: Do it right. This is just a dummy implementation
+			let datagram : number[] = [0x01,  // Domain, always 0x01
+									   0x22,  // act as panel 2
+									   0x11,  // send to ventilation unit
+									   0x29,  // set field, code for fan speed
+									   0xFF,  // placeholder for value
+									   0xFF]; // placeholder for checksum
+
+			if (state.val >= 0 && state.val <= 8) {
+				datagram[4] == this.encodeFanSpeed(state.val);
+				this.addChecksum(datagram);
+
+				this.toHexStringDatagram(datagram);
+
+				this.serialPort.write(datagram, (error, bytesWritten) => {
+					this.log.info(`SEND COMMAND: Wrote ${bytesWritten} to serial port.`);
+					if (!!error) {
+						this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+					}
+				});
+			}
+			
+
 		} else {
 			// The state was deleted
 			this.log.info(`state ${id} deleted`);
@@ -238,6 +262,12 @@ class ValloxSerial extends utils.Adapter {
     	return (checksumCalculated == data[4]);
 	}
 
+	private addChecksum(data: number[]): number {
+		let checksum = (data[0]+data[1]+data[2]+data[3]+data[4]) & 0xFF;
+		data[5] = checksum;
+		return checksum;
+	}
+
 	private toHexString(byte: number, prefix: boolean = false): string {
 		return (prefix?"0x":"") + (("0" + (byte & 0xFF).toString(16)).slice(-2));
 	}
@@ -271,10 +301,15 @@ class ValloxSerial extends utils.Adapter {
 		return reading;
 	}
 
+	// TODO: Add unit test: from 0 to 8 decodeFanSpeed(encodeFanSpeed(i))==i and encodeFanSpeed(decodeFanSpeed(i))==i
 	private decodeFanSpeed(reading: number): number | undefined {
 		let fanSpeed: number = Math.log2(reading + 1);
 		return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
 	}
+
+	private encodeFanSpeed(setvalue: number): number {
+		return (0x1 << setvalue)-1;
+	  }
 
 	private decodeOnOff(reading: number, fieldBitPattern: number): boolean | undefined {
 		return (reading & fieldBitPattern) != 0;

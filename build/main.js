@@ -144,6 +144,24 @@ class ValloxSerial extends utils.Adapter {
         if (state) {
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            // TODO: Do it right. This is just a dummy implementation
+            let datagram = [0x01,
+                0x22,
+                0x11,
+                0x29,
+                0xFF,
+                0xFF]; // placeholder for checksum
+            if (state.val >= 0 && state.val <= 8) {
+                datagram[4] == this.encodeFanSpeed(state.val);
+                this.addChecksum(datagram);
+                this.toHexStringDatagram(datagram);
+                this.serialPort.write(datagram, (error, bytesWritten) => {
+                    this.log.info(`SEND COMMAND: Wrote ${bytesWritten} to serial port.`);
+                    if (!!error) {
+                        this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+                    }
+                });
+            }
         }
         else {
             // The state was deleted
@@ -193,6 +211,11 @@ class ValloxSerial extends utils.Adapter {
         let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
         return (checksumCalculated == data[4]);
     }
+    addChecksum(data) {
+        let checksum = (data[0] + data[1] + data[2] + data[3] + data[4]) & 0xFF;
+        data[5] = checksum;
+        return checksum;
+    }
     toHexString(byte, prefix = false) {
         return (prefix ? "0x" : "") + (("0" + (byte & 0xFF).toString(16)).slice(-2));
     }
@@ -222,9 +245,13 @@ class ValloxSerial extends utils.Adapter {
     decodeIdentity(reading) {
         return reading;
     }
+    // TODO: Add unit test: from 0 to 8 decodeFanSpeed(encodeFanSpeed(i))==i and encodeFanSpeed(decodeFanSpeed(i))==i
     decodeFanSpeed(reading) {
         let fanSpeed = Math.log2(reading + 1);
         return Number.isInteger(fanSpeed) ? fanSpeed : undefined;
+    }
+    encodeFanSpeed(setvalue) {
+        return (0x1 << setvalue) - 1;
     }
     decodeOnOff(reading, fieldBitPattern) {
         return (reading & fieldBitPattern) != 0;
