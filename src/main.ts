@@ -189,7 +189,7 @@ class ValloxSerial extends utils.Adapter {
 				let datagram : number[] = [0x01,  // Domain, always 0x01
 										this.encodeControlUnitToAddress(this.config.controlUnitAddress as DatagramSender),  // act as panel 2
 										0x11,  // send to ventilation unit
-										0x29,  // set field, code for fan speed
+										this.getCommandFieldCode(id),  // set field, code for fan speed
 										0xFF,  // placeholder for value
 										0xFF]; // placeholder for checksum
 
@@ -254,6 +254,16 @@ class ValloxSerial extends utils.Adapter {
 		  }
 		}
 	  
+		return result;
+	}
+
+	private getCommandFieldCode(objectId: string): number  {
+		let result = 0x00; // invalid field code
+		for (let obj of this.ioPack.instanceObjects) { 
+			if (obj.type == "state" && obj._id == objectId) {
+				return result = obj.common.custom.fieldCodes[0];
+			}
+		}
 		return result;
 	}
 

@@ -149,7 +149,7 @@ class ValloxSerial extends utils.Adapter {
                 let datagram = [0x01,
                     this.encodeControlUnitToAddress(this.config.controlUnitAddress),
                     0x11,
-                    0x29,
+                    this.getCommandFieldCode(id),
                     0xFF,
                     0xFF]; // placeholder for checksum
                 if (state.val >= 0 && state.val <= 8) {
@@ -203,6 +203,15 @@ class ValloxSerial extends utils.Adapter {
         for (let mapping of this.datagramStateMap) {
             if (mapping.fieldCode == fieldCode) {
                 result.push(mapping);
+            }
+        }
+        return result;
+    }
+    getCommandFieldCode(objectId) {
+        let result = 0x00; // invalid field code
+        for (let obj of this.ioPack.instanceObjects) {
+            if (obj.type == "state" && obj._id == objectId) {
+                return result = obj.common.custom.fieldCodes[0];
             }
         }
         return result;
