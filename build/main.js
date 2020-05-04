@@ -91,7 +91,7 @@ class ValloxSerial extends utils.Adapter {
             // check length and checksum
             if (data.length == 5 && this.hasRightChecksum(data)) {
                 // only look at datagrams that are sent by the main unit
-                if (this.decodeSender(data[0]) == "MainUnit") {
+                if (this.decodeAddressToControlUnit(data[0]) == "MainUnit") {
                     let mappings = this.getDatagramMappingsByRequestCode(data[2]);
                     for (let mapping of mappings) {
                         let objectId = mapping.id;
@@ -142,25 +142,29 @@ class ValloxSerial extends utils.Adapter {
     onStateChange(id, state) {
         this.logEventHandlers(`onStateChange(id: ${id}, state: ${JSON.stringify(state)}) called.`);
         if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-            // TODO: Do it right. This is just a dummy implementation
-            let datagram = [0x01,
-                0x22,
-                0x11,
-                0x29,
-                0xFF,
-                0xFF]; // placeholder for checksum
-            if (state.val >= 0 && state.val <= 8) {
-                datagram[4] == this.encodeFanSpeed(state.val);
-                this.addChecksum(datagram);
-                this.toHexStringDatagram(datagram);
-                this.serialPort.write(datagram, (error, bytesWritten) => {
-                    this.log.info(`SEND COMMAND: Wrote ${bytesWritten} to serial port.`);
-                    if (!!error) {
-                        this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-                    }
-                });
+            if (this.isCommand(state)) {
+                // The state was changed
+                this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+                // TODO: Do it right. This is just a dummy implementation
+                let datagram = [0x01,
+                    this.encodeControlUnitToAddress(this.config.controlUnitAddress),
+                    0x11,
+                    0x29,
+                    0xFF,
+                    0xFF]; // placeholder for checksum
+                if (state.val >= 0 && state.val <= 8) {
+                    datagram[4] == this.encodeFanSpeed(state.val);
+                    this.addChecksum(datagram);
+                    this.toHexStringDatagram(datagram);
+                    // TODO: Uncomment after debugging
+                    /*this.serialPort.write(datagram, (error, bytesWritten) => {
+                        if (!!error) {
+                            this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+                        } else {
+                            this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+                        }
+                    });*/
+                }
             }
         }
         else {
@@ -203,6 +207,9 @@ class ValloxSerial extends utils.Adapter {
         }
         return result;
     }
+    isCommand(state) {
+        return (!!state && state.ack == false);
+    }
     // ////////////////////////////////////////////////////////////////
     // Section with datagram functions
     // TODO: Put these function in a separate Utils class
@@ -226,22 +233,21 @@ class ValloxSerial extends utils.Adapter {
         });
         return result;
     }
-    decodeSender(senderByte) {
-        let codeSenderMap = {
-            0x11: "MainUnit",
-            0x21: "Panel.1",
-            0x22: "Panel.2",
-            0x23: "Panel.3",
-            0x24: "Panel.4",
-            0x25: "Panel.5",
-            0x26: "Panel.6",
-            0x27: "Panel.7",
-            0x28: "Panel.8",
-            0x29: "Panel.9"
-        };
-        return codeSenderMap[senderByte];
+    decodeAddressToControlUnit(addr) {
+        return (addr >= 0x21 && addr <= 0x29) ? ("Panel_" + (addr - 0x20)) :
+            (addr == 0x10) ? "All" :
+                (addr == 0x11) ? "MainUnit" :
+                    (addr == 0x20) ? "All Panels" :
+                        undefined;
     }
-    ;
+    encodeControlUnitToAddress(cu) {
+        return (cu === undefined) ? 0x00 :
+            cu.startsWith("Panel") ? 0x20 + parseInt(cu.substr(6, 1)) :
+                (cu == "All") ? 0x10 :
+                    (cu == "MainUnit") ? 0x11 :
+                        (cu == "All Panels") ? 0x20 :
+                            0x00; // invalid address
+    }
     decodeIdentity(reading) {
         return reading;
     }

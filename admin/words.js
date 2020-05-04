@@ -14,6 +14,10 @@ systemDictionary = {
 		"en": "Absolute path to serial port device address, e.g. /dev/ttyUSB0",
 		"de": "Absoluter Pfad zum Device für den seriellen Port, z.B. /dev/ttyUSB0"
 	},
+	"Send commands with this address (two control units/panels with same address cause bus failure)": {
+		"en": "Send commands with this address (two control units/panels with same address cause bus failure)",
+		"de": "Befehle werden mit dieser Reglereinheitsadresse gesendet (mehrere Reglereinheiten mit derselben Adresse führen zu Bus-Problemen)"
+	},
 	"Log settings": {
 		"en": "Log settings",
 		"de": "Logging-Einstellungen"

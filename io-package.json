@@ -60,7 +60,8 @@
 		"loglevelDatagrams": "Debug",
 		"logSerialPortEvents": false,
 		"logEventHandlers": false,
-		"logAllReadingsForStateChange": false
+		"logAllReadingsForStateChange": false,
+		"controlUnitAddress": "Panel_2"
 	},
 	"objects": [],
 	"instanceObjects": [

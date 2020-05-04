@@ -12,12 +12,13 @@ declare global {
 			logSerialPortEvents: boolean;
 			logEventHandlers: boolean;
 			logAllReadingsForStateChange: boolean;
+			controlUnitAddress: string;
 		}
 	}
 }
 
-type DatagramSender = "MainUnit" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
-//type DatagramReceiver = "All" | "MainUnit" | "All Panels" | "Panel.1" | "Panel.2" | "Panel.3" | "Panel.4" | "Panel.5" | "Panel.6" | "Panel.7" | "Panel.8" | "Panel.9" | undefined;
+type DatagramSender = "MainUnit" | "Panel_1" | "Panel_2" | "Panel_3" | "Panel_4" | "Panel_5" | "Panel_6" | "Panel_7" | "Panel_8" | "Panel_9" | undefined;
+type DatagramReceiver = DatagramSender | "All" | "All Panels";
 
 type DatagramMapping = {
 	"fieldCode": number;
@@ -123,7 +124,7 @@ class ValloxSerial extends utils.Adapter {
 		// check length and checksum
 		if (data.length == 5 && this.hasRightChecksum(data)) {
 			// only look at datagrams that are sent by the main unit
-			if (this.decodeSender(data[0]) == "MainUnit") {
+			if (this.decodeAddressToControlUnit(data[0]) == "MainUnit") {
 
 				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
 				for (let mapping of mappings) {
@@ -180,32 +181,35 @@ class ValloxSerial extends utils.Adapter {
 		this.logEventHandlers(`onStateChange(id: ${id}, state: ${JSON.stringify(state)}) called.`);
 		
 		if (state) {
-			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+			if (this.isCommand(state)) {
+				// The state was changed
+				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-			// TODO: Do it right. This is just a dummy implementation
-			let datagram : number[] = [0x01,  // Domain, always 0x01
-									   0x22,  // act as panel 2
-									   0x11,  // send to ventilation unit
-									   0x29,  // set field, code for fan speed
-									   0xFF,  // placeholder for value
-									   0xFF]; // placeholder for checksum
+				// TODO: Do it right. This is just a dummy implementation
+				let datagram : number[] = [0x01,  // Domain, always 0x01
+										this.encodeControlUnitToAddress(this.config.controlUnitAddress as DatagramSender),  // act as panel 2
+										0x11,  // send to ventilation unit
+										0x29,  // set field, code for fan speed
+										0xFF,  // placeholder for value
+										0xFF]; // placeholder for checksum
 
-			if (state.val >= 0 && state.val <= 8) {
-				datagram[4] == this.encodeFanSpeed(state.val);
-				this.addChecksum(datagram);
+				if (state.val >= 0 && state.val <= 8) {
+					datagram[4] == this.encodeFanSpeed(state.val);
+					this.addChecksum(datagram);
 
-				this.toHexStringDatagram(datagram);
+					this.toHexStringDatagram(datagram);
 
-				this.serialPort.write(datagram, (error, bytesWritten) => {
-					this.log.info(`SEND COMMAND: Wrote ${bytesWritten} to serial port.`);
-					if (!!error) {
-						this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-					}
-				});
-			}
+					// TODO: Uncomment after debugging
+					/*this.serialPort.write(datagram, (error, bytesWritten) => {
+						if (!!error) {
+							this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+						} else {
+							this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+						}
+					});*/
+				}
 			
-
+			}
 		} else {
 			// The state was deleted
 			this.log.info(`state ${id} deleted`);
@@ -251,7 +255,11 @@ class ValloxSerial extends utils.Adapter {
 		}
 	  
 		return result;
-	  }
+	}
+
+	private isCommand(state: ioBroker.State | null | undefined) : boolean {
+		return (!!state && state.ack == false);
+	}
 
 	// ////////////////////////////////////////////////////////////////
 	// Section with datagram functions
@@ -280,22 +288,22 @@ class ValloxSerial extends utils.Adapter {
 		return result;
 	}
 
-	private decodeSender(senderByte: number): DatagramSender {
-		let codeSenderMap: {[key: string]: DatagramSender} = {
-			0x11: "MainUnit",
-			0x21: "Panel.1",
-			0x22: "Panel.2",
-			0x23: "Panel.3",
-			0x24: "Panel.4",
-			0x25: "Panel.5",
-			0x26: "Panel.6",
-			0x27: "Panel.7",
-			0x28: "Panel.8",
-			0x29: "Panel.9"
-		};
+	private decodeAddressToControlUnit(addr: number): DatagramSender | DatagramReceiver {
+		return  (addr >= 0x21 && addr <= 0x29) ? ("Panel_"+(addr-0x20)) as DatagramSender :
+				(addr == 0x10) ? "All" :
+				(addr == 0x11) ? "MainUnit" :
+				(addr == 0x20) ? "All Panels" :
+				undefined;
+	}
 
-		return codeSenderMap[senderByte];
-	};
+	private encodeControlUnitToAddress(cu : DatagramSender | DatagramReceiver): number {
+		return (cu === undefined) ? 0x00 :
+		       cu.startsWith("Panel") ? 0x20+parseInt(cu.substr(6,1)) :
+			   (cu == "All") ? 0x10 :
+			   (cu == "MainUnit") ? 0x11 : 
+			   (cu == "All Panels") ? 0x20 :
+			   0x00; // invalid address
+	}
 
 	private decodeIdentity(reading: any): any {
 		return reading;
