@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("@iobroker/adapter-core");
 const SerialPort = require("serialport");
+const DatagramUtils_1 = require("./DatagramUtils");
 class ValloxSerial extends utils.Adapter {
     /**
      * Constructor: Bind event handlers.
@@ -89,7 +90,7 @@ class ValloxSerial extends utils.Adapter {
             this.logEventHandlers(`onDataReady([${datagramString}]) called.`);
             this.logDatagram(datagramString);
             // check length and checksum
-            if (data.length == 5 && this.hasRightChecksum(data)) {
+            if (data.length == 5 && DatagramUtils_1.DatagramUtils.hasRightChecksum(data)) {
                 // only look at datagrams that are sent by the main unit
                 if (this.decodeAddressToControlUnit(data[0]) == "MainUnit") {
                     let mappings = this.getDatagramMappingsByRequestCode(data[2]);
@@ -223,10 +224,6 @@ class ValloxSerial extends utils.Adapter {
     // Section with datagram functions
     // TODO: Put these function in a separate Utils class
     // ////////////////////////////////////////////////////////////////
-    hasRightChecksum(data) {
-        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
-        return (checksumCalculated == data[4]);
-    }
     addChecksum(data) {
         let checksum = (data[0] + data[1] + data[2] + data[3] + data[4]) & 0xFF;
         data[5] = checksum;

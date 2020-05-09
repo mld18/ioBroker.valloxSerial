@@ -1,5 +1,6 @@
 import * as utils from "@iobroker/adapter-core";
 import * as SerialPort from "serialport";
+import { DatagramUtils as dutils } from "./DatagramUtils";
 
 // Augment the adapter.config object with the actual types
 declare global {
@@ -122,7 +123,7 @@ class ValloxSerial extends utils.Adapter {
 		this.logDatagram(datagramString);
 
 		// check length and checksum
-		if (data.length == 5 && this.hasRightChecksum(data)) {
+		if (data.length == 5 && dutils.hasRightChecksum(data)) {
 			// only look at datagrams that are sent by the main unit
 			if (this.decodeAddressToControlUnit(data[0]) == "MainUnit") {
 
@@ -275,11 +276,6 @@ class ValloxSerial extends utils.Adapter {
 	// Section with datagram functions
 	// TODO: Put these function in a separate Utils class
 	// ////////////////////////////////////////////////////////////////
-	private hasRightChecksum(data: number[]): boolean {
-		let checksumCalculated : number = (data[0]+data[1]+data[2]+data[3]+0x01) & 0xFF;
-    	return (checksumCalculated == data[4]);
-	}
-
 	private addChecksum(data: number[]): number {
 		let checksum = (data[0]+data[1]+data[2]+data[3]+data[4]) & 0xFF;
 		data[5] = checksum;
