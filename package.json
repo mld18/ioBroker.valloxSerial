@@ -56,7 +56,7 @@
     "build": "npm run build:ts",
     "watch:ts": "tsc -p tsconfig.build.json --watch",
     "watch": "npm run watch:ts",
-    "test:ts": "mocha --opts test/mocha.custom.opts",
+    "test:ts": "mocha --config test/.mocharc.json",
     "test:package": "mocha test/package --exit",
     "test:unit": "mocha test/unit --exit",
     "test:integration": "mocha test/integration --exit",
