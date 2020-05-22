@@ -88,7 +88,7 @@ export class DatagramUtils {
 	 * @param functionName one of fanSpeed, onOff, humidity, temperature, identity (case insensitive)
 	 */
 	public static getDecodeFunctionByName(functionName: string) : Function {
-		let fn = functionName.toLowerCase().trim();
+		let fn = functionName?.toLowerCase()?.trim();
 		const result = 
 			(fn == "fanspeed") ? DatagramUtils.decodeFanSpeed :
 			(fn == "onoff") ? DatagramUtils.decodeOnOff :
