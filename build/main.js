@@ -19,6 +19,7 @@ class ValloxSerial extends utils.Adapter {
      * @param options
      */
     constructor(options = {}) {
+        // @ts-ignore: Types of property 'objects' are incompatible.
         super(Object.assign(Object.assign({}, options), { name: "valloxserial" }));
         this.datagramStateMap = [];
         this.on("ready", this.onReady.bind(this));
@@ -142,13 +143,13 @@ class ValloxSerial extends utils.Adapter {
      */
     onStateChange(id, state) {
         this.logEventHandlers(`onStateChange(id: ${id}, state: ${JSON.stringify(state)}) called.`);
-        if (state) {
+        if (state && !!state.val) {
             if (this.isCommand(state)) {
                 // The state was changed
                 this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
                 // TODO: Do it right. This is just a dummy implementation
-                let datagram = [0x01,
-                    DatagramUtils_1.DatagramUtils.encodeControlUnitToAddress(this.config.controlUnitAddress),
+                let datagram = [0x01, // Domain, always 0x01
+                    DatagramUtils_1.DatagramUtils.encodeControlUnitToAddress(this.config.controlUnitAddress), // act as panel 2
                     0x11,
                     this.getCommandFieldCode(id),
                     0xFF,

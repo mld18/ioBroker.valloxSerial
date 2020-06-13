@@ -38,9 +38,10 @@ class ValloxSerial extends utils.Adapter {
 	 * @param options 
 	 */
 	public constructor(options: Partial<ioBroker.AdapterOptions> = {}) {
+		// @ts-ignore: Types of property 'objects' are incompatible.
 		super({
 			...options,
-			name: "valloxserial",
+			name: "valloxserial"
 		});
 		this.on("ready", this.onReady.bind(this));
 		this.on("objectChange", this.onObjectChange.bind(this));
@@ -176,7 +177,7 @@ class ValloxSerial extends utils.Adapter {
 	private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
 		this.logEventHandlers(`onStateChange(id: ${id}, state: ${JSON.stringify(state)}) called.`);
 		
-		if (state) {
+		if (state && !!state.val) {
 			if (this.isCommand(state)) {
 				// The state was changed
 				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -190,7 +191,7 @@ class ValloxSerial extends utils.Adapter {
 										0xFF]; // placeholder for checksum
 
 				if (state.val >= 0 && state.val <= 8) {
-					datagram[4] == dutils.encodeFanSpeed(state.val);
+					datagram[4] == dutils.encodeFanSpeed(<number>state.val);
 					dutils.addChecksum(datagram);
 
 					dutils.toHexStringDatagram(datagram);
