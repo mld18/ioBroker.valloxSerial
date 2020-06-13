@@ -114,12 +114,12 @@ The module folder contains a shell script `start-remote-debugging.sh` that start
 
 
 ## TODO
-* Improve index_m.html
 * Reflect, if the serial port should run in flowing mode or rather [do some kind of polling](https://serialport.io/docs/api-stream#serialport-pause)
 * We currently just take all readings that are send via broadcast or to one of the panels. We might behave cleaner by
   * Let the adapter mimic a panel (with on panel address 1-9)
   * Allow for sequential polling of state, fan speed, etc. (dedicated polling frequencies)
 * Currently we don't handle field code 0xA4 (Heating setpoint). Need to validate if that's just a response to a panel's request.
+* Poll values that are not submitted on a regular base, e.g. 0x2E (Current mA usage), 0x6F (Risk of water coil freezing), 0x6A (Service reminder interval in months), 
 
 ## Changelog
  
