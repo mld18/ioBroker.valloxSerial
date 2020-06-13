@@ -183,12 +183,14 @@ class ValloxSerial extends utils.Adapter {
 				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
 				// TODO: Do it right. This is just a dummy implementation
+
+				// Prepare datagram
 				let datagram : number[] = [0x01,  // Domain, always 0x01
-										dutils.encodeControlUnitToAddress(this.config.controlUnitAddress as DatagramSender),  // act as panel 2
-										0x11,  // send to ventilation unit
-										this.getCommandFieldCode(id),  // set field, code for fan speed
-										0xFF,  // placeholder for value
-										0xFF]; // placeholder for checksum
+						dutils.encodeControlUnitToAddress(this.config.controlUnitAddress as DatagramSender),  // act as the configured panel
+						0x11,  // send to ventilation unit
+						this.getCommandFieldCode(id),  // set field, code for fan speed
+						0xFF,  // placeholder for value
+						0xFF]; // placeholder for checksum
 
 				if (state.val >= 0 && state.val <= 8) {
 					datagram[4] == dutils.encodeFanSpeed(<number>state.val);

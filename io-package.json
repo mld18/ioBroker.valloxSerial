@@ -389,6 +389,108 @@
 					"encoding": "fanSpeed"
 				}				
             }
+		},
+		{
+            "_id": "Commands.setMaxFanSpeed",
+            "type": "state",
+            "common": {
+                "name": "Set maximum fan speed",
+                "type": "number",
+                "role": "level",
+                "read": false,
+				"write": true,
+				"min": 0,
+				"max": 8,
+				"desc": "Sets the maximum fan speed. Fan speed is discretely indicated by a level between 1 and 8.",
+				"custom": {
+					"fieldCodes": ["0xA5"],
+					"encoding": "fanSpeed"
+				}				
+            }
+		},
+		{
+            "_id": "Commands.setMinFanSpeed",
+            "type": "state",
+            "common": {
+                "name": "Set minimum fan speed",
+                "type": "number",
+                "role": "level",
+                "read": false,
+				"write": true,
+				"min": 0,
+				"max": 8,
+				"desc": "Sets the minimum fan speed. Fan speed is discretely indicated by a level between 1 and 8.",
+				"custom": {
+					"fieldCodes": ["0xA9"],
+					"encoding": "fanSpeed"
+				}				
+            }
+		},
+		{
+            "_id": "Commands.setHeatingSetpoint",
+            "type": "state",
+            "common": {
+                "name": "Set heating setpoint",
+                "type": "number",
+                "role": "value.temperature",
+                "read": false,
+				"write": true,
+				"unit": "°C",
+				"desc": "Set temperature setpoint for heating of incoming air",
+				"custom": {
+					"fieldCodes": ["0xA4"],
+					"encoding": "temperature"
+				}				
+            }
+		},
+		{
+            "_id": "Commands.setExhaustPreheatingSetpoint",
+            "type": "state",
+            "common": {
+                "name": "Set exhaust preheating setpoint",
+                "type": "number",
+                "role": "value.temperature",
+                "read": false,
+				"write": true,
+				"unit": "°C",
+				"desc": "Set temperature setpoint for preheating of exhaust. Preheating turns itself on, when temperature drops below this value.",
+				"custom": {
+					"fieldCodes": ["0xA7"],
+					"encoding": "temperature"
+				}				
+            }
+		},
+		{
+            "_id": "Commands.setFanStopTemperature",
+            "type": "state",
+            "common": {
+                "name": "Set fan stop temp",
+				"type": "number",
+                "role": "value.temperature",
+                "read": false,
+				"write": true,
+				"unit": "°C",
+				"desc": "Input fan stops when exhaust air temperature drops under this setpoint.",
+				"custom": {
+					"fieldCodes": ["0xA8"],
+					"encoding": "temperature"
+				}				
+            }
+		},
+		{
+            "_id": "Commands.setServiceReminder",
+            "type": "state",
+            "common": {
+                "name": "Set servide reminder",
+                "type": "number",
+                "role": "level.timer",
+                "read": false,
+				"write": true,
+				"desc": "Set service reminder interval (in months)",
+				"custom": {
+					"fieldCodes": ["0xA6"]
+				}				
+            }
 		}
 	]
 }

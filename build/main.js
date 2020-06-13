@@ -148,8 +148,9 @@ class ValloxSerial extends utils.Adapter {
                 // The state was changed
                 this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
                 // TODO: Do it right. This is just a dummy implementation
+                // Prepare datagram
                 let datagram = [0x01, // Domain, always 0x01
-                    DatagramUtils_1.DatagramUtils.encodeControlUnitToAddress(this.config.controlUnitAddress), // act as panel 2
+                    DatagramUtils_1.DatagramUtils.encodeControlUnitToAddress(this.config.controlUnitAddress), // act as the configured panel
                     0x11,
                     this.getCommandFieldCode(id),
                     0xFF,
