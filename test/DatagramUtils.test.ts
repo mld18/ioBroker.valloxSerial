@@ -179,6 +179,39 @@ describe("DatagramUtils", function() {
 		});
 	});
 
+	describe(".encodeIdentity", function() {
+		const testset = [
+			{input: []},
+			{input: null},
+			{input: "42"},
+			{input: [255]},
+			{input: true},
+			{input: 3.14}
+		];
+
+		it(`should always return the passed value`, function() {
+			for (let t of testset) {
+				const result = dutils.encodeIdentity(t.input);
+				expect(result).to.equal(t.input);
+			}
+		});
+	});
+
+	describe("nest decodeIdentity and encodeIdentity yields identity", function() {
+		it(`should return identity if decodeIdentity(encodeIdentity(i))`, function() {
+			let items = [null, 0, '', 'test', -1, Math.abs]
+			for (let i of items) {
+				expect(dutils.decodeIdentity(dutils.encodeIdentity(i))).to.equal(i);
+			}
+		});
+
+		it(`should return identity if encodeIdentity(decodeIdentity(i))`, function() {
+			for (let h=0; h<=0xFF; h++) {
+				expect(dutils.encodeIdentity(<number> dutils.decodeIdentity(h))).to.equal(h);
+			}
+		});
+	});
+
 	describe(".decodeFanSpeed", function() {
 		const testsetPositive = [
 			{input: 0x00, expected: 0},
@@ -309,6 +342,54 @@ describe("DatagramUtils", function() {
 		}); 
 	});
 
+	describe(".encodeTemperature", function() {
+		const testsetPositive = [
+			{input: -74, expected: 0x00},
+			{input: -73, expected: 0x01},
+			{input: -31, expected: 0x1A},
+			{input: 24.1, expected: 0xAD},
+			{input: 0, expected: 0x64},
+			{input: 1, expected: 0x67},
+			{input: 45, expected: 0xD3},
+			{input: 100, expected: 0xF7}
+		];
+
+		const testsetNegative = [
+			{input: -75},
+			{input: 101},
+			{input: 9999999999}
+		];
+
+		it(`should encode °C temperatures to the least code in the mapping table`, function() {
+			for (let t of testsetPositive) {
+				const result = dutils.encodeTemperature(t.input);
+				expect(result).to.equal(t.expected);
+			}
+		});
+
+		it(`should return 'undefined' for unknown values`, function() {
+			for (let t of testsetNegative) {
+				const result = dutils.encodeTemperature(t.input);
+				expect(result).to.be.undefined;
+			}
+		}); 
+	});
+
+	describe("nest decodeTemperature and encodeTemperature yields identity", function() {
+		it(`should return identity if decodeFanSpeed(encodeFanSpeed(i))`, function() {
+			for (let c=-44; c<=57; c++) {
+				expect(dutils.decodeTemperature(<number> dutils.encodeTemperature(c))).to.equal(c);
+			}
+		});
+
+		it(`should return approximate identity (only fuzzy mapping) if encodeTemperature(decodeTemperature(i))`, function() {
+			for (let h=0x00; h<=0xF8; h++) {
+				let delta = Math.abs(<number> dutils.decodeTemperature(h))<=10 ? 3 : 2;
+				expect(dutils.encodeTemperature(<number> dutils.decodeTemperature(h))).to.be.approximately(h, delta);
+			}
+		});
+	});
+
 	describe(".decodeHumidity", function() {
 		const testsetPositive = [
 			{input: 255, expected: 100.0},
@@ -338,6 +419,50 @@ describe("DatagramUtils", function() {
 				expect(result).to.be.undefined;
 			}
 		}); 
+	});
+
+	describe(".encodeHumidity", function() {
+		const testsetPositive = [
+			{input: 100.0, expected: 255},
+			{input: 0.0, expected: 51},
+			{input: 50.0, expected: 153},
+			{input: 25.0, expected: 102},
+			{input: 75.0, expected: 204}
+		];
+
+		const testsetNegative = [
+			{input: -1},
+			{input: 101},
+			{input: 9999999999}
+		];
+
+		it(`should translate %RH values to encoded humidity values`, function() {
+			for (let t of testsetPositive) {
+				const result = dutils.encodeHumidity(t.input);
+				expect(result).to.equal(t.expected);
+			}
+		});
+
+		it(`should return 'undefined' for unknown values`, function() {
+			for (let t of testsetNegative) {
+				const result = dutils.encodeHumidity(t.input);
+				expect(result).to.be.undefined;
+			}
+		}); 
+	});
+
+	describe("nest decodeHumidity and encodeHumidity yields identity", function() {
+		it(`should return identity if decodeHumidity(encodeHumidity(i))`, function() {
+			for (let i=0; i<=100; i++) {
+				expect(Math.round(<number> dutils.decodeHumidity(<number> dutils.encodeHumidity(i)))).to.equal(i);
+			}
+		});
+
+		it(`should return identity if encodeHumidity(decodeHumidity(i))`, function() {
+			for (let j=51; j<=255; j++) {
+				expect(dutils.encodeHumidity(<number> dutils.decodeHumidity(j))).to.equal(j);
+			}
+		});
 	});
 
 	describe(".getDecodeFunctionByName", function() {
@@ -377,6 +502,47 @@ describe("DatagramUtils", function() {
 			for (let t of testsetNegative) {
 				const result = dutils.getDecodeFunctionByName(t.input);
 				expect(result).to.equal(dutils.decodeIdentity);
+			}
+		}); 
+	});
+
+	describe(".getEncodeFunctionByName", function() {
+		const testsetPositive1 = [
+			{input: "fanSpeed", expected: dutils.encodeFanSpeed},
+			{input: "humidity", expected: dutils.encodeHumidity},
+			{input: "temperature", expected: dutils.encodeTemperature},
+			{input: "identity", expected: dutils.encodeIdentity}
+		];
+
+		const testsetPositiveCaseAndBlanks = [
+			{input: "FANSPEED", expected: dutils.encodeFanSpeed},
+			{input: " FANSPEED ", expected: dutils.encodeFanSpeed}
+		];
+
+		const testsetNegative = [
+			{input: ""},
+			{input: "Whatever"},
+			{input: "onoff"}     // setting is done through bit pattern, i.e. no stateless set is possible
+		];
+
+		it(`should return the proper encode method`, function() {
+			for (let t of testsetPositive1) {
+				const result = dutils.getEncodeFunctionByName(t.input);
+				expect(result).to.equal(t.expected);
+			}
+		});
+
+		it(`should ignore blanks and upper/lower case`, function() {
+			for (let t of testsetPositiveCaseAndBlanks) {
+				const result = dutils.getEncodeFunctionByName(t.input);
+				expect(result).to.equal(t.expected);
+			}
+		});
+
+		it(`should return 'encodeIdentity' for unknown values`, function() {
+			for (let t of testsetNegative) {
+				const result = dutils.getEncodeFunctionByName(t.input);
+				expect(result).to.equal(dutils.encodeIdentity);
 			}
 		}); 
 	});

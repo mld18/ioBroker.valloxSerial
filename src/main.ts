@@ -182,32 +182,19 @@ class ValloxSerial extends utils.Adapter {
 				// The state was changed
 				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-				// TODO: Do it right. This is just a dummy implementation
+				let commandConfig = this.getCommandConfig(id);
+				let commandDatagram = dutils.getDatagramForCommand(commandConfig, state.val, this.config.controlUnitAddress as DatagramSender);
 
-				// Prepare datagram
-				let datagram : number[] = [0x01,  // Domain, always 0x01
-						dutils.encodeControlUnitToAddress(this.config.controlUnitAddress as DatagramSender),  // act as the configured panel
-						0x11,  // send to ventilation unit
-						this.getCommandFieldCode(id),  // set field, code for fan speed
-						0xFF,  // placeholder for value
-						0xFF]; // placeholder for checksum
+				this.log.debug(`Compiled command datagram: ${dutils.toHexStringDatagram(commandDatagram)}`); 
 
-				if (state.val >= 0 && state.val <= 8) {
-					datagram[4] == dutils.encodeFanSpeed(<number>state.val);
-					dutils.addChecksum(datagram);
-
-					dutils.toHexStringDatagram(datagram);
-
-					// TODO: Uncomment after debugging
-					/*this.serialPort.write(datagram, (error, bytesWritten) => {
-						if (!!error) {
-							this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-						} else {
-							this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
-						}
-					});*/
-				}
-			
+				// TODO: Uncomment after debugging
+				/*this.serialPort.write(datagram, (error, bytesWritten) => {
+					if (!!error) {
+						this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+					} else {
+						this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+					}
+				});*/			
 			}
 		} else {
 			// The state was deleted
@@ -250,14 +237,22 @@ class ValloxSerial extends utils.Adapter {
 		return result;
 	}
 
-	private getCommandFieldCode(objectId: string): number  {
-		let result = 0x00; // invalid field code
+	private getCommandConfig(objectId: string): any  {
+		let result = null; // invalid id
 		for (let obj of this.ioPack.instanceObjects) { 
 			if (obj.type == "state" && obj._id == objectId) {
-				return result = obj.common.custom.fieldCodes[0];
+				result = obj.common;
+				break;
 			}
 		}
 		return result;
+	}
+
+	private getCommandFieldCode(objectId: string): number  {
+		let commandConfig = this.getCommandConfig(objectId);
+		return (!!commandConfig) ? 
+					commandConfig.custom.fieldCodes[0] :
+					0x00; // invalid field code
 	}
 
 	private isCommand(state: ioBroker.State | null | undefined) : boolean {

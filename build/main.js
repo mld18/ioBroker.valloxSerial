@@ -147,27 +147,17 @@ class ValloxSerial extends utils.Adapter {
             if (this.isCommand(state)) {
                 // The state was changed
                 this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-                // TODO: Do it right. This is just a dummy implementation
-                // Prepare datagram
-                let datagram = [0x01, // Domain, always 0x01
-                    DatagramUtils_1.DatagramUtils.encodeControlUnitToAddress(this.config.controlUnitAddress), // act as the configured panel
-                    0x11,
-                    this.getCommandFieldCode(id),
-                    0xFF,
-                    0xFF]; // placeholder for checksum
-                if (state.val >= 0 && state.val <= 8) {
-                    datagram[4] == DatagramUtils_1.DatagramUtils.encodeFanSpeed(state.val);
-                    DatagramUtils_1.DatagramUtils.addChecksum(datagram);
-                    DatagramUtils_1.DatagramUtils.toHexStringDatagram(datagram);
-                    // TODO: Uncomment after debugging
-                    /*this.serialPort.write(datagram, (error, bytesWritten) => {
-                        if (!!error) {
-                            this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-                        } else {
-                            this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
-                        }
-                    });*/
-                }
+                let commandConfig = this.getCommandConfig(id);
+                let commandDatagram = DatagramUtils_1.DatagramUtils.getDatagramForCommand(commandConfig, state.val, this.config.controlUnitAddress);
+                this.log.debug(`Compiled command datagram: ${DatagramUtils_1.DatagramUtils.toHexStringDatagram(commandDatagram)}`);
+                // TODO: Uncomment after debugging
+                /*this.serialPort.write(datagram, (error, bytesWritten) => {
+                    if (!!error) {
+                        this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+                    } else {
+                        this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+                    }
+                });*/
             }
         }
         else {
@@ -205,14 +195,21 @@ class ValloxSerial extends utils.Adapter {
         }
         return result;
     }
-    getCommandFieldCode(objectId) {
-        let result = 0x00; // invalid field code
+    getCommandConfig(objectId) {
+        let result = null; // invalid id
         for (let obj of this.ioPack.instanceObjects) {
             if (obj.type == "state" && obj._id == objectId) {
-                return result = obj.common.custom.fieldCodes[0];
+                result = obj.common;
+                break;
             }
         }
         return result;
+    }
+    getCommandFieldCode(objectId) {
+        let commandConfig = this.getCommandConfig(objectId);
+        return (!!commandConfig) ?
+            commandConfig.custom.fieldCodes[0] :
+            0x00; // invalid field code
     }
     isCommand(state) {
         return (!!state && state.ack == false);

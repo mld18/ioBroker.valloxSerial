@@ -38,9 +38,14 @@ class DatagramUtils {
      */
     static toHexStringDatagram(bytes, prefix = false) {
         let result = "";
-        bytes.forEach(byte => {
-            result += DatagramUtils.toHexString(byte, prefix) + " ";
-        });
+        if (bytes == null) {
+            result = "null";
+        }
+        else {
+            bytes.forEach(b => {
+                result += DatagramUtils.toHexString(b, prefix) + " ";
+            });
+        }
         return result.trimRight();
     }
     /**
@@ -90,9 +95,34 @@ class DatagramUtils {
         return (!!result) ? result : DatagramUtils.decodeIdentity;
     }
     /**
+     * This method maps the name of a value type to the appropriate
+     * encodeX from this Util class.
+     * If an unknown functionName is given the reference to decodeIdentity
+     * is returned.
+     * @param functionName one of fanSpeed, onOff, humidity, temperature, identity (case insensitive)
+     */
+    static getEncodeFunctionByName(functionName) {
+        var _a;
+        let fn = (_a = functionName === null || functionName === void 0 ? void 0 : functionName.toLowerCase()) === null || _a === void 0 ? void 0 : _a.trim();
+        if (fn == "onoff")
+            throw new Error('No encoding for on/off yet. We will need to query the whole data word before we can change and set a single bit.');
+        const result = (fn == "fanspeed") ? DatagramUtils.encodeFanSpeed :
+            //(fn == "onoff") ? DatagramUtils.encodeOnOff :
+            (fn == "humidity") ? DatagramUtils.encodeHumidity :
+                //(fn == "temperature") ? DatagramUtils.encodeTemperature :  // TODO: Implement me!
+                DatagramUtils.encodeIdentity;
+        return (!!result) ? result : DatagramUtils.encodeIdentity;
+    }
+    /**
      * Function returning the passed value.
     */
     static decodeIdentity(reading) {
+        return reading;
+    }
+    /**
+     * Function returning the passed value.
+    */
+    static encodeIdentity(reading) {
         return reading;
     }
     /**
@@ -156,8 +186,29 @@ class DatagramUtils {
             52, 53, 53, 54, 55, 56, 57, 59, 60, 61,
             62, 63, 65, 66, 68, 69, 71, 73, 75, 77,
             79, 81, 82, 86, 90, 93, 97, 100, 100, 100,
-            100, 100, 100, 100, 100, 100];
+            100, 100, 100, 100, 100, 100]; // 0xFA - 0xFF
         return temperatureMap[sensorValue];
+    }
+    /**
+     * This function translates a °C temperature to an encoded
+     * value that can be sent to the ventilation unit.
+     * @see decodeTemperature
+     * @param celsius is a temperature between -74°C and 100°C (both boundaries included)
+     */
+    static encodeTemperature(celsius) {
+        let result = undefined;
+        if (-74 <= celsius && celsius <= 100) {
+            let h = (celsius >= 10) ? 0x83 : 0x00; // skip values that are unlikely to be set, if possible
+            for (; h <= 0xF7; h++) {
+                let nextTemperature = DatagramUtils.decodeTemperature(h);
+                if ((nextTemperature != undefined) &&
+                    (nextTemperature >= celsius)) {
+                    result = h;
+                    break;
+                }
+            }
+        }
+        return result;
     }
     /**
      * Relative humidity values need to be according to the formula
@@ -168,6 +219,57 @@ class DatagramUtils {
     static decodeHumidity(reading) {
         let result = (reading - 51) / 2.04;
         return ((result >= 0) && (result <= 100)) ? result : undefined;
+    }
+    /**
+     * Relative humidity values need to be according to the formula
+     * (value - 51) / 2.04 and it will result in a value between 0%
+     * and 100%.
+     * @param value the value between 0 and 100 that should be encoded
+     */
+    static encodeHumidity(value) {
+        let result = ((value >= 0) && (value <= 100)) ?
+            Math.round((value * 2.04) + 51) :
+            undefined;
+        return result;
+    }
+    /**
+     * Build a 6-byte datagram that can be send in order to issue a command.
+     *
+     * @param commandConfig
+     * @param value
+     * @param senderAddress
+     */
+    static getDatagramForCommand(commandConfig, value, senderAddress) {
+        var _a, _b, _c;
+        let datagram = null;
+        let domainCode = 0x01; // Domain, always 0x01
+        let senderCode = DatagramUtils.encodeControlUnitToAddress(senderAddress);
+        let receiverCode = 0x11;
+        let fieldCode = (_a = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _a === void 0 ? void 0 : _a.fieldCodes[0];
+        // validate value and 
+        let isValidValue = (value != null);
+        if (!!commandConfig.min && typeof (commandConfig.min) === "number") {
+            isValidValue = isValidValue && typeof (value) === "number" && commandConfig.min <= value;
+        }
+        if (!!commandConfig.max && typeof (commandConfig.max) === "number") {
+            isValidValue = isValidValue && typeof (value) === "number" && commandConfig.max <= value;
+        }
+        let encodedValue = undefined;
+        if (isValidValue && ((_b = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _b === void 0 ? void 0 : _b.encoding) != undefined) {
+            let encodingFunction = DatagramUtils.getEncodeFunctionByName((_c = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _c === void 0 ? void 0 : _c.encoding);
+            encodedValue = encodingFunction(value);
+        }
+        if (!!domainCode && !!senderCode && !!receiverCode && !!fieldCode && !!encodedValue) {
+            datagram = [
+                domainCode,
+                senderCode,
+                receiverCode,
+                fieldCode,
+                encodedValue
+            ];
+            DatagramUtils.addChecksum(datagram);
+        }
+        return datagram;
     }
 }
 exports.DatagramUtils = DatagramUtils;
