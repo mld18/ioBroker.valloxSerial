@@ -96,10 +96,10 @@ Add all bytes in the packet. The least 8 bits, i.e. the lower byte, is the check
 ## Development Guide
 
 ### Used Tooling
-* Visual Studio Code (1.44.0)
+* Visual Studio Code (1.46.1)
 * ioBroker running on Raspberry PI 3B
-  * Node.js 8.17.0
-  * NPM 6.13.4
+  * Node.js 12.18.0
+  * NPM 6.14.5
 
 ### HowTos 
 

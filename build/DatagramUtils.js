@@ -104,13 +104,11 @@ class DatagramUtils {
     static getEncodeFunctionByName(functionName) {
         var _a;
         let fn = (_a = functionName === null || functionName === void 0 ? void 0 : functionName.toLowerCase()) === null || _a === void 0 ? void 0 : _a.trim();
-        if (fn == "onoff")
-            throw new Error('No encoding for on/off yet. We will need to query the whole data word before we can change and set a single bit.');
         const result = (fn == "fanspeed") ? DatagramUtils.encodeFanSpeed :
-            //(fn == "onoff") ? DatagramUtils.encodeOnOff :
+            //(fn == "onoff") ? DatagramUtils.encodeOnOff : // TODO: think about this can be done (stateful set of bit in data word with multiple switches)
             (fn == "humidity") ? DatagramUtils.encodeHumidity :
-                //(fn == "temperature") ? DatagramUtils.encodeTemperature :  // TODO: Implement me!
-                DatagramUtils.encodeIdentity;
+                (fn == "temperature") ? DatagramUtils.encodeTemperature :
+                    DatagramUtils.encodeIdentity;
         return (!!result) ? result : DatagramUtils.encodeIdentity;
     }
     /**
