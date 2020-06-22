@@ -61,7 +61,7 @@ class ValloxSerial extends utils.Adapter {
                 stopBits: 1
             });
             this.bindPortEvents();
-            // initialize and pipe serial port input through DelimiterParser
+            // initialize and pipe serial port input through InterByteTimeoutParser
             this.datagramSource = this.serialPort.pipe(new SerialPortInterByteTimeoutParser_1.SerialPortInterByteTimeoutParser(
             /* Each received data word has a size of 6 bytes,
                hence a buffer of 6 is sufficient. We assume that
@@ -97,15 +97,16 @@ class ValloxSerial extends utils.Adapter {
             // check length and checksum
             if (data.length == 6 && DatagramUtils_1.DatagramUtils.hasRightChecksum(data)) {
                 // only look at datagrams that are sent by the main unit
-                if (DatagramUtils_1.DatagramUtils.decodeAddressToControlUnit(data[0]) == "MainUnit") {
-                    let mappings = this.getDatagramMappingsByRequestCode(data[2]);
+                this.log.debug(`data[1] == ${DatagramUtils_1.DatagramUtils.toHexString(data[1])}`);
+                if (DatagramUtils_1.DatagramUtils.decodeAddressToControlUnit(data[1]) == "MainUnit") {
+                    let mappings = this.getDatagramMappingsByRequestCode(data[3]);
                     for (let mapping of mappings) {
                         let objectId = mapping.id;
                         let reading = (!!mapping.fieldBitPattern) ?
-                            mapping.encoding(data[3], mapping.fieldBitPattern) :
-                            mapping.encoding(data[3]);
+                            mapping.encoding(data[4], mapping.fieldBitPattern) :
+                            mapping.encoding(data[4]);
                         if (this.config.logAllReadingsForStateChange) {
-                            this.log.info(`Reading (code: ${DatagramUtils_1.DatagramUtils.toHexString(data[2], true)}, val: ${data[3]}) => to Object ${objectId}. Encoded value: ${reading}.`);
+                            this.log.info(`Reading (code: ${DatagramUtils_1.DatagramUtils.toHexString(data[3], true)}, val: ${data[4]}) => to Object ${objectId}. Encoded value: ${reading}.`);
                         }
                         try {
                             let stateChange = yield this.setStateChangedAsync(objectId, reading, true);
@@ -119,7 +120,7 @@ class ValloxSerial extends utils.Adapter {
                         }
                     }
                     if (mappings.length == 0) {
-                        this.log.warn("No mapping found for code " + DatagramUtils_1.DatagramUtils.toHexString(data[2], true) + `. Datagram was ${datagramString}`);
+                        this.log.warn("No mapping found for code " + DatagramUtils_1.DatagramUtils.toHexString(data[3], true) + `. Datagram was ${datagramString}`);
                     }
                 }
             }
