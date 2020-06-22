@@ -97,7 +97,6 @@ class ValloxSerial extends utils.Adapter {
             // check length and checksum
             if (data.length == 6 && DatagramUtils_1.DatagramUtils.hasRightChecksum(data)) {
                 // only look at datagrams that are sent by the main unit
-                this.log.debug(`data[1] == ${DatagramUtils_1.DatagramUtils.toHexString(data[1])}`);
                 if (DatagramUtils_1.DatagramUtils.decodeAddressToControlUnit(data[1]) == "MainUnit") {
                     let mappings = this.getDatagramMappingsByRequestCode(data[3]);
                     for (let mapping of mappings) {

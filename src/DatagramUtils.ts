@@ -60,7 +60,6 @@ export class DatagramUtils {
 	 * @param addr encoded address to be mapped to a sender or receiver (group)
 	 */
 	public static decodeAddressToControlUnit(addr: number): DatagramSender | DatagramReceiver {
-		console.log(`ZZZZZZZZZZZ ${addr}`);
 		return  (addr >= 0x21 && addr <= 0x29) ? ("Panel_"+(addr-0x20)) as DatagramSender :
 				(addr == 0x10) ? "All" :
 				(addr == 0x11) ? "MainUnit" :
