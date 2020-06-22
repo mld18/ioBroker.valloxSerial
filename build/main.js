@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("@iobroker/adapter-core");
 const SerialPort = require("serialport");
+const SerialPortInterByteTimeoutParser_1 = require("./SerialPortInterByteTimeoutParser");
 const DatagramUtils_1 = require("./DatagramUtils");
 class ValloxSerial extends utils.Adapter {
     /**
@@ -19,7 +20,7 @@ class ValloxSerial extends utils.Adapter {
      * @param options
      */
     constructor(options = {}) {
-        // @ts-ignore: Types of property 'objects' are incompatible.
+        // @ts-ignore: Types of property 'options' are incompatible.
         super(Object.assign(Object.assign({}, options), { name: "valloxserial" }));
         this.datagramStateMap = [];
         this.on("ready", this.onReady.bind(this));
@@ -61,10 +62,13 @@ class ValloxSerial extends utils.Adapter {
             });
             this.bindPortEvents();
             // initialize and pipe serial port input through DelimiterParser
-            this.datagramSource = this.serialPort.pipe(new SerialPort.parsers.Delimiter(
-            /* Datagrams start with a 0x01 byte, so we use a
-               Delimiter parser for separating datagrams */
-            { delimiter: [0x1] }));
+            this.datagramSource = this.serialPort.pipe(new SerialPortInterByteTimeoutParser_1.SerialPortInterByteTimeoutParser(
+            /* Each received data word has a size of 6 bytes,
+               hence a buffer of 6 is sufficient. We assume that
+               between two data words at least 50ms of time will
+               pass by. */
+            { maxBufferSize: 6,
+                interval: 50 }));
             this.datagramSource.on("data", this.onDataReady.bind(this));
             // Subscribe to all writable states
             this.subscribeStatesAsync(`${this.namespace}.Commands.*`);
@@ -91,7 +95,7 @@ class ValloxSerial extends utils.Adapter {
             this.logEventHandlers(`onDataReady([${datagramString}]) called.`);
             this.logDatagram(datagramString);
             // check length and checksum
-            if (data.length == 5 && DatagramUtils_1.DatagramUtils.hasRightChecksum(data)) {
+            if (data.length == 6 && DatagramUtils_1.DatagramUtils.hasRightChecksum(data)) {
                 // only look at datagrams that are sent by the main unit
                 if (DatagramUtils_1.DatagramUtils.decodeAddressToControlUnit(data[0]) == "MainUnit") {
                     let mappings = this.getDatagramMappingsByRequestCode(data[2]);

@@ -1,5 +1,6 @@
 import * as utils from "@iobroker/adapter-core";
 import * as SerialPort from "serialport";
+import { SerialPortInterByteTimeoutParser as InterByteTimeoutParser } from "./SerialPortInterByteTimeoutParser";
 import { DatagramUtils as dutils, DatagramSender, DatagramReceiver } from "./DatagramUtils";
 
 // Augment the adapter.config object with the actual types
@@ -29,7 +30,7 @@ type DatagramMapping = {
 class ValloxSerial extends utils.Adapter {
 	// Member variables
 	serialPort! : SerialPort
-	datagramSource! : SerialPort.parsers.Delimiter;
+	datagramSource! : InterByteTimeoutParser;
 	datagramStateMap: Array<DatagramMapping> = [];
 
 	/**
@@ -38,7 +39,7 @@ class ValloxSerial extends utils.Adapter {
 	 * @param options 
 	 */
 	public constructor(options: Partial<ioBroker.AdapterOptions> = {}) {
-		// @ts-ignore: Types of property 'objects' are incompatible.
+		// @ts-ignore: Types of property 'options' are incompatible.
 		super({
 			...options,
 			name: "valloxserial"
@@ -85,11 +86,14 @@ class ValloxSerial extends utils.Adapter {
 		  });
 		this.bindPortEvents();
 
-		// initialize and pipe serial port input through DelimiterParser
-		this.datagramSource = this.serialPort.pipe(new SerialPort.parsers.Delimiter(
-			/* Datagrams start with a 0x01 byte, so we use a
-			   Delimiter parser for separating datagrams */
-			{ delimiter: [0x1] }
+		// initialize and pipe serial port input through InterByteTimeoutParser
+		this.datagramSource = this.serialPort.pipe(new InterByteTimeoutParser(
+			/* Each received data word has a size of 6 bytes,
+			   hence a buffer of 6 is sufficient. We assume that
+			   between two data words at least 50ms of time will
+			   pass by. */
+			{ maxBufferSize: 6,
+			  interval: 50 }
 		));
 
 		this.datagramSource.on("data", this.onDataReady.bind(this));
@@ -121,19 +125,19 @@ class ValloxSerial extends utils.Adapter {
 		this.logDatagram(datagramString);
 
 		// check length and checksum
-		if (data.length == 5 && dutils.hasRightChecksum(data)) {
+		if (data.length == 6 && dutils.hasRightChecksum(data)) {
 			// only look at datagrams that are sent by the main unit
-			if (dutils.decodeAddressToControlUnit(data[0]) == "MainUnit") {
+			if (dutils.decodeAddressToControlUnit(data[1]) == "MainUnit") {
 
-				let mappings = this.getDatagramMappingsByRequestCode(data[2]);
+				let mappings = this.getDatagramMappingsByRequestCode(data[3]);
 				for (let mapping of mappings) {
 					let objectId = mapping.id;
 					let reading = (!!mapping.fieldBitPattern) ?
-						mapping.encoding(data[3], mapping.fieldBitPattern) :
-						mapping.encoding(data[3]);
+						mapping.encoding(data[4], mapping.fieldBitPattern) :
+						mapping.encoding(data[4]);
 					
 					if (this.config.logAllReadingsForStateChange) {
-						this.log.info(`Reading (code: ${dutils.toHexString(data[2], true)}, val: ${data[3]}) => to Object ${objectId}. Encoded value: ${reading}.`);
+						this.log.info(`Reading (code: ${dutils.toHexString(data[3], true)}, val: ${data[4]}) => to Object ${objectId}. Encoded value: ${reading}.`);
 					}
 											
 					try {
@@ -148,7 +152,7 @@ class ValloxSerial extends utils.Adapter {
 				}
 
 				if (mappings.length == 0) {
-					this.log.warn("No mapping found for code "+dutils.toHexString(data[2], true)+`. Datagram was ${datagramString}`);
+					this.log.warn("No mapping found for code "+dutils.toHexString(data[3], true)+`. Datagram was ${datagramString}`);
 				}
 			} 
 		} else {

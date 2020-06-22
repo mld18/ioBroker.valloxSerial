@@ -5,11 +5,11 @@ class DatagramUtils {
     /**
      * Checks whether the checksum is correct with respect to the
      * four first bytes.
-     * @param data 5 byte datagram. The last byte is the checksum
+     * @param data 6 byte datagram. The last byte is the checksum
      */
     static hasRightChecksum(data) {
-        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + 0x01) & 0xFF;
-        return (checksumCalculated == data[4]);
+        let checksumCalculated = (data[0] + data[1] + data[2] + data[3] + data[4]) & 0xFF;
+        return (checksumCalculated == data[5]);
     }
     /**
      * Calculates checksum and adds it at the 6. position (index: 5).
@@ -243,13 +243,13 @@ class DatagramUtils {
         let domainCode = 0x01; // Domain, always 0x01
         let senderCode = DatagramUtils.encodeControlUnitToAddress(senderAddress);
         let receiverCode = 0x11;
-        let fieldCode = (_a = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _a === void 0 ? void 0 : _a.fieldCodes[0];
+        let fieldCode = (_a = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _a === void 0 ? void 0 : _a.fieldCodes[0]; // TODO: convert to number
         // validate value and 
         let isValidValue = (value != null);
-        if (!!commandConfig.min && typeof (commandConfig.min) === "number") {
+        if (!!commandConfig.min && typeof (commandConfig.min) === "number") { // TODO: Ausdruck umstellen, sodass er bei min:0 nicht false wird
             isValidValue = isValidValue && typeof (value) === "number" && commandConfig.min <= value;
         }
-        if (!!commandConfig.max && typeof (commandConfig.max) === "number") {
+        if (!!commandConfig.max && typeof (commandConfig.max) === "number") { // TODO: Ausdruck umstellen, sodass er bei max:0 nicht false wird
             isValidValue = isValidValue && typeof (value) === "number" && commandConfig.max <= value;
         }
         let encodedValue = undefined;
