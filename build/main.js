@@ -151,17 +151,30 @@ class ValloxSerial extends utils.Adapter {
             if (this.isCommand(state)) {
                 // The state was changed
                 this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-                let commandConfig = this.getCommandConfig(id);
-                let commandDatagram = DatagramUtils_1.DatagramUtils.getDatagramForCommand(commandConfig, state.val, this.config.controlUnitAddress);
-                this.log.debug(`Compiled command datagram: ${DatagramUtils_1.DatagramUtils.toHexStringDatagram(commandDatagram)}`);
-                // TODO: Uncomment after debugging
-                /*this.serialPort.write(datagram, (error, bytesWritten) => {
-                    if (!!error) {
-                        this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-                    } else {
-                        this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
-                    }
-                });*/
+                // Convert value to numeric
+                let numValue;
+                if (typeof (state.val) === "number") {
+                    numValue = state.val;
+                }
+                else if (typeof (state.val) === "string" && !Number.isNaN(parseInt(state.val))) {
+                    numValue = parseInt(state.val);
+                }
+                if (numValue !== undefined) {
+                    let commandConfig = this.getCommandConfig(id);
+                    let commandDatagram = DatagramUtils_1.DatagramUtils.getDatagramForCommand(commandConfig, numValue, this.config.controlUnitAddress);
+                    this.log.debug(`Compiled command datagram: ${DatagramUtils_1.DatagramUtils.toHexStringDatagram(commandDatagram)}`);
+                    // TODO: Uncomment after debugging
+                    /*this.serialPort.write(datagram, (error, bytesWritten) => {
+                        if (!!error) {
+                            this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+                        } else {
+                            this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+                        }
+                    });*/
+                }
+                else {
+                    this.log.warn(`unable to convert value ${state.val} into a number to compile a command datagram`);
+                }
             }
         }
         else {

@@ -3,21 +3,36 @@
  */
 
 import { expect } from "chai"; 
-import { DatagramUtils as dutils, DatagramSender, DatagramReceiver } from "../src/DatagramUtils";
+import { DatagramUtils as dutils, DatagramSender, DatagramReceiver} from "../src/DatagramUtils";
 
 describe("DatagramUtils", function() {
 	describe(".hasRightChecksum", function() {
-		const datagram5BytesWithRightChecksum = [
+		const datagram6BytesWithRightChecksum = [
 			[0x01, 0x21, 0x11, 0x00, 0xA3, 0xD6],
 			[0x01, 0x11, 0x21, 0xA3, 0x03, 0xD9],
 			[0x01, 0x21, 0x11, 0xA6, 0xFF, 0xD8]
 		];
+
+		// negative test
+		const datagram5Bytes = [
+			[0x21, 0x11, 0x00, 0xA3, 0xD6],
+			[0x11, 0x21, 0xA3, 0x03, 0xD9],
+			[0x21, 0x11, 0xA6, 0xFF, 0xD8]
+		]
 	
-		// Test 5-Byte-Datagrams (Byte 1 with 0x01 is used for separation)
-		for (let d of datagram5BytesWithRightChecksum) {
+		// Test 6-Byte datagrams
+		for (let d of datagram6BytesWithRightChecksum) {
 			it(`should have right checksum ${d[4]}`, function() {
 				const result = dutils.hasRightChecksum(d);
 				expect(result).to.be.true;
+			});
+		}
+
+		// Test 5-Byte datagrams (used to work, shouldn't work anymore)
+		for (let d of datagram5Bytes) {
+			it(`should not accept 5 byte datagrams despite of a right checksum`, function() {
+				const result = dutils.hasRightChecksum(d);
+				expect(result).to.be.false;
 			});
 		}
 	}); 
@@ -545,5 +560,109 @@ describe("DatagramUtils", function() {
 				expect(result).to.equal(dutils.encodeIdentity);
 			}
 		}); 
+	});
+
+	describe(".getDatagramForCommand", function() {
+		const testsetPositive = [
+			{
+				input: {
+					commandConfig: {
+										"name": "Set fan speed",
+										"type": "number",
+										"role": "level",
+										"read": false,
+										"write": true,
+										"min": 0,
+										"max": 8,
+										"desc": "Fan speed is discretely indicated by a level between 1 and 8",
+										"custom": {
+											"fieldCodes": ["0x29"],
+											"encoding": "fanSpeed"
+										}				
+									},
+					value: 7,
+					senderAddress: "Panel_5"
+				},
+				expected: [0x01, 0x25, 0x11, 0x29, 0x7F, 0xDF]
+			},
+			{
+				input: {
+					commandConfig: {
+										"name": "Set heating setpoint",
+										"type": "number",
+										"role": "value.temperature",
+										"read": false,
+										"write": true,
+										"unit": "°C",
+										"desc": "Set temperature setpoint for heating of incoming air",
+										"custom": {
+											"fieldCodes": ["0xA4"],
+											"encoding": "temperature"
+										}					
+									},
+					value: 42,
+					senderAddress: "Panel_9"
+				},
+				expected: [0x01, 0x29, 0x11, 0xA4, 0xCF, 0xAE]
+			}
+		];
+
+		const testsetMinMaxEffektive = [
+			{
+				input: {
+					commandConfig: {
+										"name": "Set fan speed",
+										"type": "number",
+										"role": "level",
+										"read": false,
+										"write": true,
+										"min": 0,
+										"max": 8,
+										"desc": "Fan speed is discretely indicated by a level between 1 and 8",
+										"custom": {
+											"fieldCodes": ["0x29"],
+											"encoding": "fanSpeed"
+										}				
+									},
+					value: -1,
+					senderAddress: "Panel_5"
+				}
+			},
+			{
+				input: {
+					commandConfig: {
+										"name": "Set fan speed",
+										"type": "number",
+										"role": "level",
+										"read": false,
+										"write": true,
+										"min": 0,
+										"max": 8,
+										"desc": "Fan speed is discretely indicated by a level between 1 and 8",
+										"custom": {
+											"fieldCodes": ["0x29"],
+											"encoding": "fanSpeed"
+										}				
+									},
+					value: 9,
+					senderAddress: "Panel_5"
+				}
+			}
+		];
+
+		it(`should return the proper command datagrams`, function() {
+			for (let t of testsetPositive) {
+				const result = dutils.getDatagramForCommand(t.input.commandConfig, t.input.value, <DatagramSender>t.input.senderAddress);
+				expect(result).to.deep.equal(t.expected);
+			}
+		});
+
+		it(`should return undefined if passed value exceeds min/max boundaries`, function() {
+			for (let t of testsetMinMaxEffektive) {
+				const result = dutils.getDatagramForCommand(t.input.commandConfig, t.input.value, <DatagramSender>t.input.senderAddress);
+				expect(result).to.be.null;
+			}
+		});
+
 	});
 });

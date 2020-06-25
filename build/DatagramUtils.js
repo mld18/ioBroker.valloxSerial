@@ -243,14 +243,14 @@ class DatagramUtils {
         let domainCode = 0x01; // Domain, always 0x01
         let senderCode = DatagramUtils.encodeControlUnitToAddress(senderAddress);
         let receiverCode = 0x11;
-        let fieldCode = (_a = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _a === void 0 ? void 0 : _a.fieldCodes[0]; // TODO: convert to number
+        let fieldCode = parseInt((_a = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _a === void 0 ? void 0 : _a.fieldCodes[0]);
         // validate value and 
         let isValidValue = (value != null);
-        if (!!commandConfig.min && typeof (commandConfig.min) === "number") { // TODO: Ausdruck umstellen, sodass er bei min:0 nicht false wird
-            isValidValue = isValidValue && typeof (value) === "number" && commandConfig.min <= value;
+        if (typeof (commandConfig.min) === "number" && !Number.isNaN(commandConfig.min)) {
+            isValidValue = isValidValue && commandConfig.min <= value;
         }
-        if (!!commandConfig.max && typeof (commandConfig.max) === "number") { // TODO: Ausdruck umstellen, sodass er bei max:0 nicht false wird
-            isValidValue = isValidValue && typeof (value) === "number" && commandConfig.max <= value;
+        if (typeof (commandConfig.max) === "number" && !Number.isNaN(commandConfig.max)) {
+            isValidValue = isValidValue && value <= commandConfig.max;
         }
         let encodedValue = undefined;
         if (isValidValue && ((_b = commandConfig === null || commandConfig === void 0 ? void 0 : commandConfig.custom) === null || _b === void 0 ? void 0 : _b.encoding) != undefined) {

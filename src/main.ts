@@ -186,19 +186,31 @@ class ValloxSerial extends utils.Adapter {
 				// The state was changed
 				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-				let commandConfig = this.getCommandConfig(id);
-				let commandDatagram = dutils.getDatagramForCommand(commandConfig, state.val, this.config.controlUnitAddress as DatagramSender);
+				// Convert value to numeric
+				let numValue;
+				if (typeof(state.val)==="number") {
+					numValue = state.val;
+				} else if (typeof(state.val)==="string" && !Number.isNaN(parseInt(state.val))) {
+					numValue = parseInt(state.val);
+				}
 
-				this.log.debug(`Compiled command datagram: ${dutils.toHexStringDatagram(commandDatagram)}`); 
-
-				// TODO: Uncomment after debugging
-				/*this.serialPort.write(datagram, (error, bytesWritten) => {
-					if (!!error) {
-						this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-					} else {
-						this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
-					}
-				});*/			
+				if (numValue !== undefined) {
+					let commandConfig = this.getCommandConfig(id);
+					let commandDatagram = dutils.getDatagramForCommand(commandConfig, numValue, this.config.controlUnitAddress as DatagramSender);
+	
+					this.log.debug(`Compiled command datagram: ${dutils.toHexStringDatagram(commandDatagram)}`); 
+	
+					// TODO: Uncomment after debugging
+					/*this.serialPort.write(datagram, (error, bytesWritten) => {
+						if (!!error) {
+							this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+						} else {
+							this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
+						}
+					});*/	
+				} else {
+					this.log.warn(`unable to convert value ${state.val} into a number to compile a command datagram`);
+				}			
 			}
 		} else {
 			// The state was deleted
