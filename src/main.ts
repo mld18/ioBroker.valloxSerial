@@ -197,17 +197,16 @@ class ValloxSerial extends utils.Adapter {
 				if (numValue !== undefined) {
 					let commandConfig = this.getCommandConfig(id);
 					let commandDatagram = dutils.getDatagramForCommand(commandConfig, numValue, this.config.controlUnitAddress as DatagramSender);
-	
-					this.log.debug(`Compiled command datagram: ${dutils.toHexStringDatagram(commandDatagram)}`); 
-	
-					// TODO: Uncomment after debugging
-					/*this.serialPort.write(datagram, (error, bytesWritten) => {
-						if (!!error) {
-							this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
-						} else {
-							this.log.debug(`Datagram ${this.toHexStringDatagram(datagram)} successfully sent.`);
-						}
-					});*/	
+
+					if (commandDatagram != null) {
+						this.log.debug(`Compiled command datagram: ${dutils.toHexStringDatagram(commandDatagram)}`); 
+
+						this.serialPort.write(commandDatagram, (error, bytesWritten) => {
+							if (!!error) {
+								this.log.error(`ERROR WHEN WRITING TO SERIAL PORT: ${error}`);
+							}
+						});
+					}
 				} else {
 					this.log.warn(`unable to convert value ${state.val} into a number to compile a command datagram`);
 				}			
